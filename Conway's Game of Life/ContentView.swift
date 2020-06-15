@@ -9,10 +9,17 @@
 import SwiftUI
 
 struct ContentView: View {
-   @State var tilemap: Tilemap = .random()
+   @ObservedObject var gameEngine = GameEngine()
 
    var body: some View {
-      TilemapView(tilemap: $tilemap)
+      VStack {
+         Button(action: gameEngine.toggleRunning) {
+            Text(gameEngine.isRunning ? "Stop" : "Start")
+         }
+         TilemapView(
+            tilemap: $gameEngine.tilemap,
+            isEditable: !gameEngine.isRunning)
+      }
    }
 }
 

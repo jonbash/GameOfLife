@@ -11,11 +11,12 @@ import SwiftUI
 
 struct TileView: View {
    @Binding var tile: Tile
+   var isEditable: Bool
 
    var body: some View {
       Button(action: tileTapped) {
          Color(white: tile.isAlive ? 1 : 0)
-      }
+      }.disabled(!isEditable)
    }
 
    func tileTapped() {
@@ -25,6 +26,8 @@ struct TileView: View {
 
 struct TileView_Previews: PreviewProvider {
    static var previews: some View {
-      TileView(tile: Binding(get: { .dead }, set: { _ in }))
+      TileView(
+         tile: Binding(get: { .dead }, set: { _ in }),
+         isEditable: true)
    }
 }
