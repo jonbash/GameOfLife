@@ -17,6 +17,11 @@ struct Tilemap {
       self.tiles = Array(repeating: .dead, count: width * height)
       self.width = width
    }
+
+   init(tiles: [Tile], width: Int) {
+      self.tiles = tiles
+      self.width = width
+   }
 }
 
 extension Tilemap {
@@ -47,17 +52,35 @@ extension Tilemap {
    func contains(tileIndex: Int) -> Bool {
       tileIndex < tileCount
    }
+
+   mutating func update() {
+      var newMap = self
+      let adjacentVectors = Vector.allAdjacent
+      tiles.enumerated().forEach { i, tile in
+         let adjacentTiles = adjacentVectors.compactMap { diff -> Tile? in
+            let newIndex = i + diff.x + (diff.y * height)
+            guard self.contains(tileIndex: newIndex) else { return nil }
+            return self.tiles[newIndex]
+         }
+         newMap[i] = tile.willLive(given: adjacentTiles) ? .alive : .dead
+      }
+   }
 }
 
 // MARK: - Points
 
 extension Tilemap {
+   typealias Point = Vector
+
    func point(fromIndex index: Int) -> Point {
-      Point(x: index % width, y: index / width, tilemap: self)
+      Point(x: index % width, y: index / width)
    }
 
    func contains(point: Point) -> Bool {
-      point.x < width && point.y < height
+      point.x < width
+         && point.y < height
+         && point.x >= 0
+         && point.y >= 0
    }
 
    func tileIndex(for point: Point) -> Int {
@@ -68,26 +91,31 @@ extension Tilemap {
       guard self.contains(point: point) else { return nil }
       return self[point.x, point.y]
    }
+
+   func nextPoint(from point: Point) -> Point {
+      self.point(fromIndex: tileIndex(for: point) + 1)
+   }
+
+   func tile(from point: Point, by diff: Vector) -> Tile? {
+      tile(at: point + diff)
+   }
 }
 
 // MARK: - Sequence
 
 extension Tilemap: Sequence {
    struct Iterator: IteratorProtocol {
-      typealias Element = Tile
-
-      var index: Point?
+      var index: Point
+      let tilemap: Tilemap
 
       init(tilemap: Tilemap) {
-         self.index = Point(tilemap: tilemap)
+         self.index = Point()
+         self.tilemap = tilemap
       }
 
       mutating func next() -> Tile? {
-         guard
-            let index = index,
-            let tile = index.tilemap.tile(at: index)
-            else { return nil }
-         self.index = index.next()
+         guard let tile = tilemap.tile(at: index) else { return nil }
+         self.index = tilemap.nextPoint(from: index)
          return tile
       }
    }
@@ -100,21 +128,25 @@ extension Tilemap: Sequence {
 // MARK: - Collection
 
 extension Tilemap: Collection {
-   func index(after i: Point) -> Point {
-      var newIndex = i
-      newIndex.tilemap = self
-      return newIndex.next()
+   subscript(position: Int) -> Tile {
+      get {
+         tiles[position]
+      }
+      set {
+         tiles[position] = newValue
+      }
    }
 
-   typealias Element = Tile
-   typealias Index = Point
-
-   var startIndex: Point { point(fromIndex: 0) }
-   var endIndex: Point { point(fromIndex: tileCount - 1) }
+   var startIndex: Int { 0 }
+   var endIndex: Int { tiles.endIndex }
 
    subscript(_ point: Point) -> Tile {
       get { self[point.x, point.y] }
       set { self[point.x, point.y] = newValue }
+   }
+
+   func index(after i: Int) -> Int {
+      i + 1
    }
 }
 

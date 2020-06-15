@@ -31,8 +31,17 @@ extension Tile {
       rawValue += 1
       self = Tile(safe: rawValue)
    }
-}
 
+   func willLive(given adjacents: [Tile]) -> Bool {
+      let liveCount = adjacents.liveCount
+      if self.isAlive {
+         return liveCount == 2 || liveCount == 3
+      } else if self.isDead {
+         return liveCount == 3
+      }
+      return false
+   }
+}
 
 // MARK: - Random
 
@@ -47,5 +56,15 @@ extension Tile {
    static func random() -> Tile {
       var rando = Rando()
       return random(using: &rando)
+   }
+}
+
+// MARK: - Other Type Extensions
+
+extension Collection where Element == Tile {
+   var liveCount: Int {
+      reduce(0) { count, tile -> Int in
+         tile.isAlive ? count + 1 : count
+      }
    }
 }
