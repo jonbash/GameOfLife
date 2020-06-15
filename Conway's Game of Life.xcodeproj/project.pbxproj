@@ -56,12 +56,8 @@
 		99CB04EC2497C66F00082A98 /* Conway's Game of Life */ = {
 			isa = PBXGroup;
 			children = (
-				99CB04ED2497C66F00082A98 /* AppDelegate.swift */,
-				99CB04EF2497C66F00082A98 /* SceneDelegate.swift */,
 				99CB04F12497C66F00082A98 /* ContentView.swift */,
-				99CB04F32497C67200082A98 /* Assets.xcassets */,
-				99CB04F82497C67200082A98 /* LaunchScreen.storyboard */,
-				99CB04FB2497C67200082A98 /* Info.plist */,
+				99CB05012497C68A00082A98 /* App */,
 				99CB04F52497C67200082A98 /* Preview Content */,
 			);
 			path = "Conway's Game of Life";
@@ -73,6 +69,18 @@
 				99CB04F62497C67200082A98 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		99CB05012497C68A00082A98 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				99CB04ED2497C66F00082A98 /* AppDelegate.swift */,
+				99CB04EF2497C66F00082A98 /* SceneDelegate.swift */,
+				99CB04F32497C67200082A98 /* Assets.xcassets */,
+				99CB04F82497C67200082A98 /* LaunchScreen.storyboard */,
+				99CB04FB2497C67200082A98 /* Info.plist */,
+			);
+			path = App;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -288,7 +296,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Conway's Game of Life/Preview Content\"";
 				DEVELOPMENT_TEAM = 22X3GA956P;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "Conway's Game of Life/Info.plist";
+				INFOPLIST_FILE = "Conway's Game of Life/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -308,7 +316,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Conway's Game of Life/Preview Content\"";
 				DEVELOPMENT_TEAM = 22X3GA956P;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "Conway's Game of Life/Info.plist";
+				INFOPLIST_FILE = "Conway's Game of Life/App/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
