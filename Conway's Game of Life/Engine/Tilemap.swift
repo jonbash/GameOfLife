@@ -24,6 +24,7 @@ extension Tilemap {
       get { tiles.count / width }
    }
    var tileCount: Int { tiles.count }
+
    subscript(_ x: Int, _ y: Int) -> Tile {
       get {
          let index = tileIndex(forX: x, y: y)
@@ -96,6 +97,8 @@ extension Tilemap: Sequence {
    }
 }
 
+// MARK: - Collection
+
 extension Tilemap: Collection {
    func index(after i: Point) -> Point {
       var newIndex = i
@@ -112,5 +115,27 @@ extension Tilemap: Collection {
    subscript(_ point: Point) -> Tile {
       get { self[point.x, point.y] }
       set { self[point.x, point.y] = newValue }
+   }
+}
+
+// MARK: - Random
+
+extension Tilemap {
+   static func random<RNG: RandomNumberGenerator>(
+      width: Int,
+      height: Int,
+      gen: inout RNG
+   ) -> Tilemap {
+      var map = Tilemap(width: width, height: height)
+      for i in 0 ..< map.tileCount {
+         let point = map.point(fromIndex: i)
+         map[point] = .random(using: &gen)
+      }
+      return map
+   }
+
+   static func random(width: Int = 20, height: Int = 20) -> Tilemap {
+      var rando = Rando()
+      return random(width: width, height: height, gen: &rando)
    }
 }
