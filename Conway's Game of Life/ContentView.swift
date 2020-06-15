@@ -9,8 +9,10 @@
 import SwiftUI
 
 struct ContentView: View {
+   @State var tilemap: Tilemap = .random()
+
    var body: some View {
-      Text("Hello, World!")
+      TilemapView(tilemap: $tilemap)
    }
 }
 
