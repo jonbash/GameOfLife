@@ -7,12 +7,18 @@
 //
 
 import Foundation
+import Combine
+
 
 class GameEngine: ObservableObject {
    @Published var tilemap: Tilemap
-
    var updateInterval: TimeInterval
-   @Published private(set) var timer: Timer?
+
+   private(set) lazy var timer = Timer.TimerPublisher(
+      interval: updateInterval,
+      runLoop: .current,
+      mode: .default)
+   private var updateSink: AnyCancellable?
 
    init(
       tilemap: Tilemap = .random(width: 20, height: 20),
@@ -24,26 +30,18 @@ class GameEngine: ObservableObject {
 }
 
 extension GameEngine {
-   var isRunning: Bool { timer != nil }
+   var isRunning: Bool { updateSink != nil }
 
    func toggleRunning() {
       isRunning ? stop() : start()
    }
 
    func start() {
-      timer = .scheduledTimer(
-         withTimeInterval: updateInterval,
-         repeats: true,
-         block: update(_:))
-      timer?.fire()
+      updateSink = timer
+         .sink { _ in self.tilemap.update() }
    }
 
    func stop() {
-      self.timer?.invalidate()
-      self.timer = nil
-   }
-
-   private func update(_ timer: Timer) {
-      tilemap.update()
+      updateSink = nil
    }
 }
