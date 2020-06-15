@@ -16,6 +16,8 @@
 		99CB05032497C6C400082A98 /* Tilemap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05022497C6C400082A98 /* Tilemap.swift */; };
 		99CB05052497C97800082A98 /* Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05042497C97800082A98 /* Tile.swift */; };
 		99CB05072497CACC00082A98 /* Vector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05062497CACC00082A98 /* Vector.swift */; };
+		99CB05302497E45C00082A98 /* Point.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB052F2497E45C00082A98 /* Point.swift */; };
+		99CB05322497E75300082A98 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05312497E75300082A98 /* Utilities.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,8 @@
 		99CB05022497C6C400082A98 /* Tilemap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tilemap.swift; sourceTree = "<group>"; };
 		99CB05042497C97800082A98 /* Tile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tile.swift; sourceTree = "<group>"; };
 		99CB05062497CACC00082A98 /* Vector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vector.swift; sourceTree = "<group>"; };
+		99CB052F2497E45C00082A98 /* Point.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Point.swift; sourceTree = "<group>"; };
+		99CB05312497E75300082A98 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,8 +98,10 @@
 			isa = PBXGroup;
 			children = (
 				99CB05022497C6C400082A98 /* Tilemap.swift */,
+				99CB052F2497E45C00082A98 /* Point.swift */,
 				99CB05042497C97800082A98 /* Tile.swift */,
 				99CB05062497CACC00082A98 /* Vector.swift */,
+				99CB05312497E75300082A98 /* Utilities.swift */,
 			);
 			path = Engine;
 			sourceTree = "<group>";
@@ -175,7 +181,9 @@
 				99CB04EE2497C66F00082A98 /* AppDelegate.swift in Sources */,
 				99CB05072497CACC00082A98 /* Vector.swift in Sources */,
 				99CB05052497C97800082A98 /* Tile.swift in Sources */,
+				99CB05302497E45C00082A98 /* Point.swift in Sources */,
 				99CB04F02497C66F00082A98 /* SceneDelegate.swift in Sources */,
+				99CB05322497E75300082A98 /* Utilities.swift in Sources */,
 				99CB04F22497C66F00082A98 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
