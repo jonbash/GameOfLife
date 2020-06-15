@@ -30,6 +30,17 @@ extension Tilemap {
    }
    var tileCount: Int { tiles.count }
 
+   var as2DString: String {
+      var output = ""
+      for y in 0..<height {
+         for x in 0..<width {
+            output += tile(at: Point(x: x, y: y))?.isAlive ?? false ? "O" : " "
+         }
+         output += "\n"
+      }
+      return output
+   }
+
    subscript(_ x: Int, _ y: Int) -> Tile {
       get {
          let index = tileIndex(forX: x, y: y)
@@ -45,14 +56,6 @@ extension Tilemap {
       }
    }
 
-   func tileIndex(forX x: Int, y: Int) -> Int {
-      (y * width) + x
-   }
-
-   func contains(tileIndex: Int) -> Bool {
-      tileIndex < tileCount
-   }
-
    mutating func update() {
       var newMap = self
       let adjacentVectors = Vector.allAdjacent
@@ -64,6 +67,15 @@ extension Tilemap {
          }
          newMap[i] = tile.willLive(given: adjacentTiles) ? .alive : .dead
       }
+      self = newMap
+   }
+
+   func tileIndex(forX x: Int, y: Int) -> Int {
+      (y * width) + x
+   }
+
+   func contains(tileIndex: Int) -> Bool {
+      tileIndex < tileCount && tileIndex >= 0
    }
 }
 
