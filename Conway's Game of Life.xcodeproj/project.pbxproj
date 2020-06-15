@@ -72,9 +72,7 @@
 		99CB04EC2497C66F00082A98 /* Conway's Game of Life */ = {
 			isa = PBXGroup;
 			children = (
-				99CB04F12497C66F00082A98 /* ContentView.swift */,
-				99CB05332497EE6000082A98 /* TilemapView.swift */,
-				99CB05352497EE6C00082A98 /* TileView.swift */,
+				99CB053B2498390B00082A98 /* Views */,
 				99CB052E2497DF0500082A98 /* Engine */,
 				99CB05012497C68A00082A98 /* App */,
 				99CB04F52497C67200082A98 /* Preview Content */,
@@ -113,6 +111,16 @@
 				99CB05372498051C00082A98 /* Rando.swift */,
 			);
 			path = Engine;
+			sourceTree = "<group>";
+		};
+		99CB053B2498390B00082A98 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				99CB04F12497C66F00082A98 /* ContentView.swift */,
+				99CB05332497EE6000082A98 /* TilemapView.swift */,
+				99CB05352497EE6C00082A98 /* TileView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
