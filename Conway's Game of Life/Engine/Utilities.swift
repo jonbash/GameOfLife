@@ -27,3 +27,10 @@ extension Optional where Wrapped: Comparable {
       return lhs < rhs
    }
 }
+
+
+extension BinaryFloatingPoint {
+   func clamped(to clamp: Self) -> Self {
+      (self > clamp) ? clamp : self
+   }
+}

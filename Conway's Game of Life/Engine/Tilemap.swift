@@ -26,21 +26,18 @@ struct Tilemap {
    }
 }
 
-extension Tilemap {
-   var height: Int {
-      get { tiles.count / width }
-   }
-   var tileCount: Int { tiles.count }
+// MARK: - Subscripts
 
-   var as2DString: String {
-      var output = ""
-      for y in 0..<height {
-         for x in 0..<width {
-            output += tile(at: Point(x: x, y: y))?.isAlive ?? false ? "O" : " "
-         }
-         output += "\n"
+extension Tilemap {
+   subscript(_ point: Point) -> Tile {
+      get {
+         assert(tiles[point] != nil, "Index in tilemap out of range")
+         return tiles[point]!
       }
-      return output
+      set {
+         assert(tiles[point] != nil, "Index in tilemap out of range")
+         tiles[point] = newValue
+      }
    }
 
    subscript(_ x: Int, _ y: Int) -> Tile {
@@ -54,17 +51,6 @@ extension Tilemap {
       }
    }
 
-   subscript(_ point: Point) -> Tile {
-      get {
-         assert(tiles[point] != nil, "Index in tilemap out of range")
-         return tiles[point]!
-      }
-      set {
-         assert(tiles[point] != nil, "Index in tilemap out of range")
-         tiles[point] = newValue
-      }
-   }
-
    subscript(_ position: Int) -> Tile {
       get {
          tiles[position].value
@@ -74,7 +60,17 @@ extension Tilemap {
          tiles[key] = newValue
       }
    }
+}
 
+extension Tilemap {
+   var height: Int {
+      get { tiles.count / width }
+   }
+}
+
+// MARK: - Update
+
+extension Tilemap {
    func newGeneration(on buffer: inout Tilemap) {
       buffer.tiles.transform { pair in
          let liveNeighborCount = pair.key.neighbors
@@ -86,18 +82,6 @@ extension Tilemap {
       }
    }
 
-   func tileIndex(forX x: Int, y: Int) -> Int {
-      (y * width) + x
-   }
-
-   func contains(tileIndex: Int) -> Bool {
-      tileIndex < tileCount && tileIndex >= 0
-   }
-}
-
-// MARK: - Update
-
-extension Tilemap {
    mutating func resize(forNewWidth newWidth: Int, newHeight: Int) {
       guard newWidth != width || newHeight != height
          else { return }
@@ -110,10 +94,20 @@ extension Tilemap {
    }
 }
 
-// MARK: - Points
+// MARK: - Tiles / Points
 
 extension Tilemap {
    typealias Point = Vector
+
+   var tileCount: Int { tiles.count }
+
+   func tileIndex(forX x: Int, y: Int) -> Int {
+      (y * width) + x
+   }
+
+   func contains(tileIndex: Int) -> Bool {
+      tileIndex < tileCount && tileIndex >= 0
+   }
 
    func point(fromIndex index: Int) -> Point {
       Point(x: index % width, y: index / width)
@@ -186,20 +180,44 @@ extension Tilemap: Collection {
 
 extension Tilemap {
    static func random<RNG: RandomNumberGenerator>(
-      width: Int,
-      height: Int,
+      width: Int = 25,
+      height: Int = 25,
+      liveRatio: Double = 0.5,
       gen: inout RNG
    ) -> Tilemap {
       var map = Tilemap(width: width, height: height)
       for i in 0 ..< map.tileCount {
          let point = map.point(fromIndex: i)
-         map[point] = .random(using: &gen)
+         map[point] = .random(liveChance: liveRatio, using: &gen)
       }
       return map
    }
 
-   static func random(width: Int = 20, height: Int = 20) -> Tilemap {
+   static func random(
+      width: Int = 25,
+      height: Int = 25,
+      liveRatio: Double = 0.5
+   ) -> Tilemap {
       var rando = Rando()
-      return random(width: width, height: height, gen: &rando)
+      return random(width: width, height: height, liveRatio: liveRatio, gen: &rando)
+   }
+}
+
+// MARK: - String Convertible
+
+extension Tilemap: CustomStringConvertible {
+   var description: String {
+      self.as2DString
+   }
+
+   var as2DString: String {
+      var output = ""
+      for y in 0..<height {
+         for x in 0..<width {
+            output += tile(at: Point(x: x, y: y))?.isAlive ?? false ? "O" : " "
+         }
+         output += "\n"
+      }
+      return output
    }
 }

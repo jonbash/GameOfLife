@@ -41,15 +41,20 @@ extension Tile {
 
 extension Tile {
    static func random<RNG: RandomNumberGenerator>(
+      liveChance: Double = 0.5,
       using rng: inout RNG
    ) -> Tile {
-      let rawValue = UInt.random(in: 0 ..< UInt(Self.allCases.count), using: &rng)
-      return Tile(safe: rawValue)
+      let deadness = Double.random(in: 0...1, using: &rng)
+      if deadness < liveChance {
+         return .alive
+      } else {
+         return .dead
+      }
    }
 
-   static func random() -> Tile {
+   static func random(liveChance: Double = 0.5) -> Tile {
       var rando = Rando()
-      return random(using: &rando)
+      return random(liveChance: liveChance, using: &rando)
    }
 }
 

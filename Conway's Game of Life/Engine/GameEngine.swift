@@ -13,17 +13,16 @@ import UIKit
 
 class GameEngine: ObservableObject {
    @Published var tilemap: Tilemap
-   @Published var framerate: Double {
-      didSet { frameFrequency = setFrameFrequency() }
-   }
    @Published private(set) var generation: Int = 0
    @Published private(set) var isRunning: Bool = false
-
-   private let updateThread = DispatchQueue.global()
+   @Published var framerate: Double {
+      didSet { frameFrequency = newFrameFrequency() }
+   }
 
    private var bufferTilemap: Tilemap
-   private lazy var frameFrequency = setFrameFrequency()
-   var lastUpdateTime = CFAbsoluteTimeGetCurrent()
+   private lazy var frameFrequency = newFrameFrequency()
+   private var lastUpdateTime = CFAbsoluteTimeGetCurrent()
+   private let updateThread = DispatchQueue.global()
 
    init(
       tilemap: Tilemap = .init(width: 25, height: 25),
@@ -33,8 +32,6 @@ class GameEngine: ObservableObject {
       self.bufferTilemap = tilemap
       self.framerate = framerate
    }
-
-   deinit { stop() }
 }
 
 extension GameEngine {
@@ -50,17 +47,17 @@ extension GameEngine {
    }
 
    private func main() {
-      self.updateThread.async {
+      self.updateThread.async { [weak self] in
          autoreleasepool {
-            while self.isRunning == true {
+            while self?.isRunning == true {
                let currentTime = CFAbsoluteTimeGetCurrent()
-               let deltaTime = currentTime - self.lastUpdateTime
-               if deltaTime < self.frameFrequency {
+               let deltaTime = currentTime - (self?.lastUpdateTime ?? currentTime)
+               if deltaTime < self?.frameFrequency {
                   usleep(4000)
                   continue
                }
-               self.update()
-               self.lastUpdateTime = currentTime
+               self?.update()
+               self?.lastUpdateTime = currentTime
             }
          }
       }
@@ -78,7 +75,7 @@ extension GameEngine {
       }
    }
 
-   private func setFrameFrequency() -> CFAbsoluteTime {
+   private func newFrameFrequency() -> Double {
       return CFAbsoluteTime(exactly: 1 / Double(framerate)) ?? 1
    }
 }
