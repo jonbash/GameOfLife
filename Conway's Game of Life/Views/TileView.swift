@@ -12,6 +12,7 @@ import SwiftUI
 struct TileView: View {
    @Binding var tile: Tile
    var isEditable: Bool
+   var onTap: ((Tile) -> Void)?
 
    var body: some View {
       Button(action: tileTapped) {
@@ -20,6 +21,7 @@ struct TileView: View {
    }
 
    func tileTapped() {
+      onTap?(tile)
       tile.toggle()
    }
 }

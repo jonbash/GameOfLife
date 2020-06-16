@@ -13,6 +13,7 @@ struct TilemapView: View {
    var isEditable: Bool
 
    var spacing: CGFloat = 0.0
+   var onTileTap: ((Tile) -> Void)?
 
    var body: some View {
       VStack(spacing: spacing) {
@@ -21,13 +22,14 @@ struct TilemapView: View {
                ForEach(0 ..< self.tilemap.width, id: \.self) { column in
                   TileView(
                      tile: self.$tilemap[row, column],
-                     isEditable: self.isEditable)
+                     isEditable: self.isEditable,
+                     onTap: self.onTileTap)
                }
             }
          }
-      }.aspectRatio(CGFloat(tilemap.width) / CGFloat(tilemap.height),
-                    contentMode: .fit)
-      .padding(10)
+      }.aspectRatio(
+         CGFloat(tilemap.width) / CGFloat(tilemap.height),
+         contentMode: .fit)
    }
 }
 

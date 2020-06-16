@@ -11,14 +11,25 @@ import SwiftUI
 struct ContentView: View {
    @ObservedObject var gameEngine = GameEngine()
 
+   let framerateText = { Text("Framerate") }
+
    var body: some View {
       VStack {
+         HStack {
+            framerateText()
+            Slider(
+               value: $gameEngine.framerate,
+               in: gameEngine.framerateRange,
+               label: framerateText)
+         }
          Button(action: gameEngine.toggleRunning) {
             Text(gameEngine.isRunning ? "Stop" : "Start")
          }
          TilemapView(
             tilemap: $gameEngine.tilemap,
-            isEditable: !gameEngine.isRunning)
+            isEditable: !gameEngine.isRunning) { tile in
+               
+         }
       }
    }
 }
