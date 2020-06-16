@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -21,6 +21,7 @@
 		99CB05362497EE6C00082A98 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05352497EE6C00082A98 /* TileView.swift */; };
 		99CB05382498051C00082A98 /* Rando.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05372498051C00082A98 /* Rando.swift */; };
 		99CB053A249824F400082A98 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB0539249824F400082A98 /* GameEngine.swift */; };
+		99CB053E2499300500082A98 /* OrderedDictionary in Frameworks */ = {isa = PBXBuildFile; productRef = 99CB053D2499300500082A98 /* OrderedDictionary */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99CB053E2499300500082A98 /* OrderedDictionary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +141,9 @@
 			dependencies = (
 			);
 			name = "Conway's Game of Life";
+			packageProductDependencies = (
+				99CB053D2499300500082A98 /* OrderedDictionary */,
+			);
 			productName = "Conway's Game of Life";
 			productReference = 99CB04EA2497C66F00082A98 /* Conway's Game of Life.app */;
 			productType = "com.apple.product-type.application";
@@ -167,6 +172,9 @@
 				Base,
 			);
 			mainGroup = 99CB04E12497C66F00082A98;
+			packageReferences = (
+				99CB053C2499300500082A98 /* XCRemoteSwiftPackageReference "OrderedDictionary" */,
+			);
 			productRefGroup = 99CB04EB2497C66F00082A98 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -400,6 +408,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		99CB053C2499300500082A98 /* XCRemoteSwiftPackageReference "OrderedDictionary" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jonbash/OrderedDictionary.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		99CB053D2499300500082A98 /* OrderedDictionary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 99CB053C2499300500082A98 /* XCRemoteSwiftPackageReference "OrderedDictionary" */;
+			productName = OrderedDictionary;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 99CB04E22497C66F00082A98 /* Project object */;
 }

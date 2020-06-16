@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "OrderedDictionary",
+        "repositoryURL": "https://github.com/jonbash/OrderedDictionary.git",
+        "state": {
+          "branch": "master",
+          "revision": "311a07792748569ba736c1eff2963b78d3cbbba5",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
