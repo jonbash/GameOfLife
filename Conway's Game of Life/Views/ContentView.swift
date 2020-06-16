@@ -11,26 +11,36 @@ import SwiftUI
 struct ContentView: View {
    @ObservedObject var gameEngine = GameEngine()
 
-   let framerateText = { Text("Framerate") }
+   let framerateFormatter = configure(NumberFormatter()) {
+      $0.maximumFractionDigits = 2
+   }
 
    var body: some View {
       VStack {
-         HStack {
-            framerateText()
+         HStack(spacing: 8) {
             Slider(
                value: $gameEngine.framerate,
-               in: gameEngine.framerateRange,
-               label: framerateText)
-         }
+               in: gameEngine.framerateRange)
+            Text(framerateString() + " gens/sec")
+         }.padding(.horizontal, 20)
+
          Button(action: gameEngine.toggleRunning) {
             Text(gameEngine.isRunning ? "Stop" : "Start")
          }
+
          TilemapView(
             tilemap: $gameEngine.tilemap,
-            isEditable: !gameEngine.isRunning) { tile in
-               
-         }
+            isEditable: !gameEngine.isRunning
+         )
+
+         Text("Generation: \(gameEngine.generation)")
       }
+   }
+
+   private func framerateString() -> String {
+      framerateFormatter
+         .string(from: NSNumber(value: gameEngine.framerate))
+         ?? "??"
    }
 }
 

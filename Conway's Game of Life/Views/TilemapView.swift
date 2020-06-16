@@ -27,7 +27,8 @@ struct TilemapView: View {
                }
             }
          }
-      }.aspectRatio(
+      }
+      .aspectRatio(
          CGFloat(tilemap.width) / CGFloat(tilemap.height),
          contentMode: .fit)
    }

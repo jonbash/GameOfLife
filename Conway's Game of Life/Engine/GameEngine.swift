@@ -8,50 +8,77 @@
 
 import Foundation
 import Combine
+import UIKit
 
 
 class GameEngine: ObservableObject {
    @Published var tilemap: Tilemap
-   @Published var framerate: Double
+   @Published var framerate: Double {
+      didSet { frameFrequency = setFrameFrequency() }
+   }
    @Published private(set) var generation: Int = 0
-   
-   private(set) var timer: Timer?
+   @Published private(set) var isRunning: Bool = false
+
+   private let updateThread = DispatchQueue.global()
+
+   private var bufferTilemap: Tilemap
+   private lazy var frameFrequency = setFrameFrequency()
+   var lastUpdateTime = CFAbsoluteTimeGetCurrent()
 
    init(
-      tilemap: Tilemap = .random(width: 20, height: 20),
+      tilemap: Tilemap = .init(width: 25, height: 25),
       framerate: Double = 2
    ) {
       self.tilemap = tilemap
+      self.bufferTilemap = tilemap
       self.framerate = framerate
    }
+
+   deinit { stop() }
 }
 
 extension GameEngine {
-   var framerateRange: ClosedRange<Double> { 1...60 }
-   
-   var isRunning: Bool { timer != nil }
+   var framerateRange: ClosedRange<Double> { 1...20 }
 
    func toggleRunning() {
       isRunning ? stop() : start()
    }
 
-   func start() {
-      self.timer = makeTimer(with: framerate)
+   private func start() {
+      isRunning = true
+      main()
    }
 
-   func stop() {
-      self.timer?.invalidate()
-      self.timer = nil
-   }
-
-   func makeTimer(with framerate: Double) -> Timer {
-      .scheduledTimer(withTimeInterval: 1 / framerate, repeats: true, block: update(_:))
-   }
-
-   private func update(_ timer: Timer) {
-      if timer.timeInterval != framerate {
-         self.timer = makeTimer(with: framerate)
+   private func main() {
+      self.updateThread.async {
+         autoreleasepool {
+            while self.isRunning == true {
+               let currentTime = CFAbsoluteTimeGetCurrent()
+               let deltaTime = currentTime - self.lastUpdateTime
+               if deltaTime < self.frameFrequency {
+                  usleep(4000)
+                  continue
+               }
+               self.update()
+               self.lastUpdateTime = currentTime
+            }
+         }
       }
-      tilemap.update()
+   }
+
+   private func stop() {
+      isRunning = false
+   }
+
+   private func update() {
+      tilemap.newGeneration(on: &bufferTilemap)
+      DispatchQueue.main.sync {
+         (self.tilemap, self.bufferTilemap) = (self.bufferTilemap, self.tilemap)
+         self.generation += 1
+      }
+   }
+
+   private func setFrameFrequency() -> CFAbsoluteTime {
+      return CFAbsoluteTime(exactly: 1 / Double(framerate)) ?? 1
    }
 }

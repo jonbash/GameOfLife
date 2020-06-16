@@ -32,14 +32,8 @@ extension Tile {
       self = Tile(safe: rawValue)
    }
 
-   func willLive(given adjacents: [Tile]) -> Bool {
-      let liveCount = adjacents.liveCount
-      if self.isAlive {
-         return liveCount == 2 || liveCount == 3
-      } else if self.isDead {
-         return liveCount == 3
-      }
-      return false
+   func willLive(given liveNeighbors: Int) -> Bool {
+      (liveNeighbors == 3) || (liveNeighbors == 2 && self.isAlive)
    }
 }
 
@@ -56,6 +50,37 @@ extension Tile {
    static func random() -> Tile {
       var rando = Rando()
       return random(using: &rando)
+   }
+}
+
+// MARK: - Updater
+
+extension Tile {
+   var updater: Updater {
+      Updater(previousTile: self)
+   }
+
+   struct Updater {
+      let previousTile: Tile
+
+      private(set) var liveCount = 0
+      private(set) var hitByMainLoop = false
+
+      var toTile: Tile? {
+         guard hitByMainLoop else { return nil }
+         if liveCount == 3 || (liveCount == 2 && previousTile.isAlive) {
+            return .alive
+         }
+         return .dead
+      }
+
+      mutating func incrementLiveCount() {
+         liveCount += 1
+      }
+
+      mutating func hitWithMainLoop() {
+         hitByMainLoop = true
+      }
    }
 }
 

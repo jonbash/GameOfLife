@@ -15,6 +15,7 @@ struct Vector {
 }
 
 extension Vector: Equatable {}
+extension Vector: Hashable {}
 
 // MARK: - Constants
 
@@ -31,8 +32,12 @@ extension Vector {
    static var downLeft: Vector { Vector(x: -1, y: 1) }
    static var downRight: Vector { Vector(x: 1, y: 1) }
 
-   static var allAdjacent: [Vector] {
+   static var neighborVectors: [Vector] {
       [.up, .upRight, .right, .downRight, .down, .downLeft, .left, .upLeft]
+   }
+
+   var neighbors: [Vector] {
+      Self.neighborVectors.map { self + $0 }
    }
 }
 
@@ -40,18 +45,18 @@ extension Vector {
 
 extension Vector {
    static func + (lhs: Vector, rhs: Vector) -> Vector {
-      Vector(x: lhs.x + rhs.x, y: lhs.y + lhs.y)
+      Vector(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
    }
 
    static func - (lhs: Vector, rhs: Vector) -> Vector {
-      Vector(x: lhs.x - rhs.x, y: lhs.y - lhs.y)
+      Vector(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
    }
 
    static func * (lhs: Vector, rhs: Vector) -> Vector {
-      Vector(x: lhs.x * rhs.x, y: lhs.y * lhs.y)
+      Vector(x: lhs.x * rhs.x, y: lhs.y * rhs.y)
    }
 
    static func / (lhs: Vector, rhs: Vector) -> Vector {
-      Vector(x: lhs.x + rhs.x, y: lhs.y + lhs.y)
+      Vector(x: lhs.x / rhs.x, y: lhs.y / rhs.y)
    }
 }

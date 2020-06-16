@@ -7,19 +7,21 @@
 //
 
 import Foundation
+import OrderedDictionary
 
 
 struct Tilemap {
-   private(set) var tiles: [Tile]
+   private(set) var tiles = OrderedDictionary<Point, Tile>()
    private(set) var width: Int
 
    init(width: Int = 1, height: Int = 1) {
-      self.tiles = Array(repeating: .dead, count: width * height)
-      self.width = width
-   }
-
-   init(tiles: [Tile], width: Int) {
-      self.tiles = tiles
+      self.tiles = OrderedDictionary(
+         (0..<height).flatMap { column in
+            (0..<width).map { row in
+               (key: Point(x: row, y: column), value: Tile.dead)
+            }
+         }
+      )
       self.width = width
    }
 }
@@ -43,31 +45,45 @@ extension Tilemap {
 
    subscript(_ x: Int, _ y: Int) -> Tile {
       get {
-         let index = tileIndex(forX: x, y: y)
-         assert(self.contains(tileIndex: index),
-                "Index for tilemap out of range; \(#function) in \(#file)")
-         return tiles[index]
+         let point = Point(x: x, y: y)
+         return self[point]
       }
       set {
-         let index = tileIndex(forX: x, y: y)
-         assert(self.contains(tileIndex: index),
-                "Index for tilemap out of range; \(#function) in \(#file)")
-         tiles[index] = newValue
+         let point = Point(x: x, y: y)
+         self[point] = newValue
       }
    }
 
-   mutating func update() {
-      var newMap = self
-      let adjacentVectors = Vector.allAdjacent
-      tiles.enumerated().forEach { i, tile in
-         let adjacentTiles = adjacentVectors.compactMap { diff -> Tile? in
-            let newIndex = i + diff.x + (diff.y * height)
-            guard self.contains(tileIndex: newIndex) else { return nil }
-            return self.tiles[newIndex]
-         }
-         newMap[i] = tile.willLive(given: adjacentTiles) ? .alive : .dead
+   subscript(_ point: Point) -> Tile {
+      get {
+         assert(tiles[point] != nil, "Index in tilemap out of range")
+         return tiles[point]!
       }
-      self = newMap
+      set {
+         assert(tiles[point] != nil, "Index in tilemap out of range")
+         tiles[point] = newValue
+      }
+   }
+
+   subscript(_ position: Int) -> Tile {
+      get {
+         tiles[position].value
+      }
+      set {
+         let key = tiles[position].key
+         tiles[key] = newValue
+      }
+   }
+
+   func newGeneration(on buffer: inout Tilemap) {
+      buffer.tiles.transform { pair in
+         let liveNeighborCount = pair.key.neighbors
+            .compactMap(tile(at:))
+            .reduce(into: 0) { count, tile in
+               if tile.isAlive { count += 1 }
+         }
+         pair.value = self[pair.key].willLive(given: liveNeighborCount) ? .alive : .dead
+      }
    }
 
    func tileIndex(forX x: Int, y: Int) -> Int {
@@ -76,6 +92,21 @@ extension Tilemap {
 
    func contains(tileIndex: Int) -> Bool {
       tileIndex < tileCount && tileIndex >= 0
+   }
+}
+
+// MARK: - Update
+
+extension Tilemap {
+   mutating func resize(forNewWidth newWidth: Int, newHeight: Int) {
+      guard newWidth != width || newHeight != height
+         else { return }
+      let oldTiles = self.tiles
+      self = Tilemap(width: newWidth, height: newHeight)
+      for (point, tile) in oldTiles {
+         guard self.contains(point: point) else { continue }
+         self.tiles[point] = tile
+      }
    }
 }
 
@@ -89,10 +120,7 @@ extension Tilemap {
    }
 
    func contains(point: Point) -> Bool {
-      point.x < width
-         && point.y < height
-         && point.x >= 0
-         && point.y >= 0
+      tiles.keyValuePairs[point] != nil
    }
 
    func tileIndex(for point: Point) -> Int {
@@ -101,11 +129,17 @@ extension Tilemap {
 
    func tile(at point: Point) -> Tile? {
       guard self.contains(point: point) else { return nil }
-      return self[point.x, point.y]
+      return tiles[point]
    }
 
    func nextPoint(from point: Point) -> Point {
-      self.point(fromIndex: tileIndex(for: point) + 1)
+      var newPoint = point
+      newPoint.x += 1
+      if newPoint.x >= width {
+         newPoint.y += newPoint.x / width
+         newPoint.x = newPoint.x % width
+      }
+      return newPoint
    }
 
    func tile(from point: Point, by diff: Vector) -> Tile? {
@@ -140,22 +174,8 @@ extension Tilemap: Sequence {
 // MARK: - Collection
 
 extension Tilemap: Collection {
-   subscript(position: Int) -> Tile {
-      get {
-         tiles[position]
-      }
-      set {
-         tiles[position] = newValue
-      }
-   }
-
    var startIndex: Int { 0 }
    var endIndex: Int { tiles.endIndex }
-
-   subscript(_ point: Point) -> Tile {
-      get { self[point.x, point.y] }
-      set { self[point.x, point.y] = newValue }
-   }
 
    func index(after i: Int) -> Int {
       i + 1
