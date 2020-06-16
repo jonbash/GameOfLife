@@ -12,36 +12,46 @@ import Combine
 
 class GameEngine: ObservableObject {
    @Published var tilemap: Tilemap
-   var updateInterval: TimeInterval
-
-   private(set) lazy var timer = Timer.TimerPublisher(
-      interval: updateInterval,
-      runLoop: .current,
-      mode: .default)
-   private var updateSink: AnyCancellable?
+   @Published var framerate: Double
+   @Published private(set) var generation: Int = 0
+   
+   private(set) var timer: Timer?
 
    init(
       tilemap: Tilemap = .random(width: 20, height: 20),
-      updateInterval: TimeInterval = 0.5
+      framerate: Double = 2
    ) {
       self.tilemap = tilemap
-      self.updateInterval = updateInterval
+      self.framerate = framerate
    }
 }
 
 extension GameEngine {
-   var isRunning: Bool { updateSink != nil }
+   var framerateRange: ClosedRange<Double> { 1...60 }
+   
+   var isRunning: Bool { timer != nil }
 
    func toggleRunning() {
       isRunning ? stop() : start()
    }
 
    func start() {
-      updateSink = timer
-         .sink { _ in self.tilemap.update() }
+      self.timer = makeTimer(with: framerate)
    }
 
    func stop() {
-      updateSink = nil
+      self.timer?.invalidate()
+      self.timer = nil
+   }
+
+   func makeTimer(with framerate: Double) -> Timer {
+      .scheduledTimer(withTimeInterval: 1 / framerate, repeats: true, block: update(_:))
+   }
+
+   private func update(_ timer: Timer) {
+      if timer.timeInterval != framerate {
+         self.timer = makeTimer(with: framerate)
+      }
+      tilemap.update()
    }
 }
