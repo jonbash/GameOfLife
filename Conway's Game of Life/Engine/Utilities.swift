@@ -9,6 +9,17 @@
 import Foundation
 
 
+@discardableResult
+func configure<T>(
+   _ value: T,
+   with changes: (inout T) throws -> Void
+) rethrows -> T {
+   var value = value
+   try changes(&value)
+   return value
+}
+
+
 extension Optional where Wrapped: Comparable {
    static func < (lhs: Self, rhs: Self) -> Bool {
       guard let lhs = lhs, let rhs = rhs
