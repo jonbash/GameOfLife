@@ -14,15 +14,25 @@ struct TileView: View {
    var isEditable: Bool
    var onTap: ((Tile) -> Void)?
 
+   @Environment(\.colorScheme) var colorScheme
+
    var body: some View {
       Button(action: tileTapped) {
-         Color(white: tile.isAlive ? 1 : 0)
+         color(for: colorScheme, isAlive: tile.isAlive)
       }.disabled(!isEditable)
    }
 
    func tileTapped() {
       onTap?(tile)
       tile.toggle()
+   }
+
+   func color(for systemMode: ColorScheme, isAlive: Bool) -> Color {
+      !isAlive ? color(from: systemMode) : color(from: systemMode.opposite)
+   }
+
+   func color(from systemMode: ColorScheme) -> Color {
+      systemMode == .dark ? .black : .white
    }
 }
 
@@ -31,5 +41,15 @@ struct TileView_Previews: PreviewProvider {
       TileView(
          tile: Binding(get: { .dead }, set: { _ in }),
          isEditable: true)
+   }
+}
+
+
+extension ColorScheme {
+   var opposite: ColorScheme {
+      switch self {
+      case .dark: return .light
+      default: return .dark
+      }
    }
 }

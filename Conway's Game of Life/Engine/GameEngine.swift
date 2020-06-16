@@ -41,6 +41,12 @@ extension GameEngine {
       isRunning ? stop() : start()
    }
 
+   func advanceGeneration() {
+      self.updateThread.async {
+         self.update()
+      }
+   }
+
    private func start() {
       isRunning = true
       main()
