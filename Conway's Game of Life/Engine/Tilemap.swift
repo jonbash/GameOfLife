@@ -21,12 +21,7 @@ struct Tilemap {
    init(width: Int = 1, height: Int = 1) {
       self.width = width
       self.height = height
-      self.forEach({ point in
-         tiles[point] = .dead
-      })
-      for _ in 1...8 {
-         threadBuffer.add(DispatchQueue.global())
-      }
+      self.forEach { tiles[$0] = .dead }
    }
 }
 

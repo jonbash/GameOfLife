@@ -34,84 +34,101 @@ struct ContentView: View {
 
    var body: some View {
       VStack(spacing: 20) {
-         HStack(spacing: 12) {
-            HStack(spacing: 8) {
-               labeledTextField("W:",
-                                placeholderText: "New Width",
-                                binding: $newWidthText)
-               labeledTextField("H:",
-                                placeholderText: "New Height",
-                                binding: $newHeightText)
-            }
-            Button(action: prepareToResizeTilemap) {
-               Text("Resize")
-            }.disabled(newWidth == nil || newHeight == nil)
-               .jbButtonStyle(background: defaultButtonBG)
-         }
+         tilemapSizeControls()
 
-         HStack(spacing: 8) {
-            Button(action: {
-               self.gameEngine.tilemap = Tilemap.random(
-                  width: self.gameEngine.tilemap.width,
-                  height: self.gameEngine.tilemap.height)
-            }) {
-               Text("Randomize")
-            }.jbButtonStyle(background: defaultButtonBG)
+         tilemapContentControls()
 
-            Button(action: {
-               self.gameEngine.tilemap = Tilemap(
-                  width: self.gameEngine.tilemap.width,
-                  height: self.gameEngine.tilemap.height)
-            }) {
-               Text("Clear")
-            }.jbButtonStyle(background: defaultButtonBG)
-         }
+         framerateControls()
 
-         HStack(spacing: 8) {
-            Slider(
-               value: $gameEngine.framerate,
-               in: gameEngine.framerateRange)
-            Text(framerateString() + " gens/sec")
-         }.padding(.horizontal, 20)
-
-         HStack(spacing: 20) {
-            Button(action: gameEngine.toggleRunning) {
-               HStack(spacing: 4) {
-                  if gameEngine.isRunning {
-                     Text("Pause Simulation")
-                     Image(systemName: "pause.fill")
-                  } else {
-                     Text("Start Simulation")
-                     Image(systemName: "forward.fill")
-                  }
-               }
-            }.jbButtonStyle(background:
-               Color(red: 0.5,
-                     green: 0.9,
-                     blue: 0.8,
-                     opacity: 0.5))
-            Button(action: gameEngine.advanceGeneration) {
-               HStack(spacing: 2) {
-                  Text("Advance")
-                  Image(systemName: "forward.end.fill")
-               }.disabled(gameEngine.isRunning)
-                  .jbButtonStyle(background: defaultButtonBG)
-            }
-         }
+         progressionControls()
 
          TilemapView(
             tilemap: $gameEngine.tilemap,
-            isEditable: !gameEngine.isRunning
-         )
+            isEditable: !gameEngine.isRunning)
 
          Text("Generation: \(gameEngine.generation)")
             .font(.headline)
       }
    }
 
+   // MARK: - SubViews
+
+   private func tilemapSizeControls() -> some View {
+      HStack(spacing: 12) {
+         HStack(spacing: 8) {
+            labeledTextField("W:",
+                             placeholderText: "New Width",
+                             binding: $newWidthText)
+            labeledTextField("H:",
+                             placeholderText: "New Height",
+                             binding: $newHeightText)
+         }
+         Button(action: prepareToResizeTilemap) {
+            Text("Resize")
+         }.disabled(newWidth == nil || newHeight == nil)
+            .jbButtonStyle(background: defaultButtonBG)
+      }
+   }
+
+   private func tilemapContentControls() -> some View {
+      HStack(spacing: 8) {
+         Button(action: {
+            self.gameEngine.tilemap = Tilemap.random(
+               width: self.gameEngine.tilemap.width,
+               height: self.gameEngine.tilemap.height)
+         }) {
+            Text("Randomize")
+         }.jbButtonStyle(background: defaultButtonBG)
+
+         Button(action: {
+            self.gameEngine.tilemap = Tilemap(
+               width: self.gameEngine.tilemap.width,
+               height: self.gameEngine.tilemap.height)
+         }) {
+            Text("Clear")
+         }.jbButtonStyle(background: defaultButtonBG)
+      }
+   }
+
+   private func framerateControls() -> some View {
+      HStack(spacing: 8) {
+         Slider(
+            value: $gameEngine.framerate,
+            in: gameEngine.framerateRange)
+         Text(framerateString() + " gens/sec")
+      }.padding(.horizontal, 20)
+   }
+
+   private func progressionControls() -> some View {
+      HStack(spacing: 20) {
+         Button(action: gameEngine.toggleRunning) {
+            HStack(spacing: 4) {
+               if gameEngine.isRunning {
+                  Text("Pause Simulation")
+                  Image(systemName: "pause.fill")
+               } else {
+                  Text("Start Simulation")
+                  Image(systemName: "forward.fill")
+               }
+            }
+         }.jbButtonStyle(background:
+            Color(red: 0.5,
+                  green: 0.9,
+                  blue: 0.8,
+                  opacity: 0.5))
+         Button(action: gameEngine.advanceGeneration) {
+            HStack(spacing: 2) {
+               Text("Advance")
+               Image(systemName: "forward.end.fill")
+            }.disabled(gameEngine.isRunning)
+               .jbButtonStyle(background: defaultButtonBG)
+         }
+      }
+   }
+
    // MARK: - Helpers
 
-   var defaultButtonBG: Color {
+   private var defaultButtonBG: Color {
       Color(red: 0.5,
             green: 0.9,
             blue: 0.8,
