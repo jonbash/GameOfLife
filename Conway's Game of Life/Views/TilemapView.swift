@@ -21,9 +21,8 @@ struct TilemapView: View {
             HStack(spacing: self.spacing) {
                ForEach(0 ..< self.tilemap.width, id: \.self) { column in
                   TileView(
-                     tile: self.$tilemap[row, column],
-                     isEditable: self.isEditable,
-                     onTap: self.onTileTap)
+                     tile: self.$tilemap[Point(x: row, y: column)],
+                     isEditable: self.isEditable)
                }
             }
          }

@@ -9,12 +9,12 @@
 import Foundation
 
 
-enum Tile: UInt, CaseIterable {
+enum Tile: UInt8, CaseIterable {
    case dead
    case alive
 
    init<I: BinaryInteger>(safe rawValue: I) {
-      if let tile = Tile(rawValue: UInt(rawValue)) {
+      if let tile = Tile(rawValue: UInt8(rawValue)) {
          self = tile
       } else {
          self = Tile(safe: abs(Int(rawValue)) % Self.allCases.count)
@@ -27,13 +27,11 @@ extension Tile {
    var isAlive: Bool { self == .alive }
 
    mutating func toggle() {
-      var rawValue = self.rawValue
-      rawValue += 1
-      self = Tile(safe: rawValue)
+      self = (self == .alive) ? .dead : .alive
    }
 
    func willLive(given liveNeighbors: Int) -> Bool {
-      (liveNeighbors == 3) || (liveNeighbors == 2 && self.isAlive)
+      (liveNeighbors == 3) || (isAlive && liveNeighbors == 2)
    }
 }
 

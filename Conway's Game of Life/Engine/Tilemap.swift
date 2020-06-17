@@ -10,19 +10,21 @@ import Foundation
 import OrderedDictionary
 
 
+typealias Point = Vector
+
+
 struct Tilemap {
-   private(set) var tiles = OrderedDictionary<Point, Tile>()
+   private var tiles = [Point: Tile]()
    private(set) var width: Int
+   private(set) var height: Int
+
+   private var buffer = [Point: Tile]()
 
    init(width: Int = 1, height: Int = 1) {
-      self.tiles = OrderedDictionary(
-         (0..<height).flatMap { column in
-            (0..<width).map { row in
-               (key: Point(x: row, y: column), value: Tile.dead)
-            }
-         }
-      )
+      self.tiles = Tilemap.makeTiles(forWidth: width, height: height)
+      self.buffer = tiles
       self.width = width
+      self.height = height
    }
 }
 
@@ -30,66 +32,61 @@ struct Tilemap {
 
 extension Tilemap {
    subscript(_ point: Point) -> Tile {
-      get {
-         assert(tiles[point] != nil, "Index in tilemap out of range")
-         return tiles[point]!
-      }
-      set {
-         assert(tiles[point] != nil, "Index in tilemap out of range")
-         tiles[point] = newValue
-      }
+      get { tiles[point, default: .dead] }
+      set { tiles[point] = newValue }
    }
 
-   subscript(_ x: Int, _ y: Int) -> Tile {
-      get {
-         let point = Point(x: x, y: y)
-         return self[point]
-      }
-      set {
-         let point = Point(x: x, y: y)
-         self[point] = newValue
-      }
-   }
-
-   subscript(_ position: Int) -> Tile {
-      get {
-         tiles[position].value
-      }
-      set {
-         let key = tiles[position].key
-         tiles[key] = newValue
-      }
-   }
-}
-
-extension Tilemap {
-   var height: Int {
-      get { tiles.count / width }
+   subscript(_ x: Int, _ y: Int) -> Tile? {
+      get { tiles[Point(x: x, y: y)] }
    }
 }
 
 // MARK: - Update
 
 extension Tilemap {
-   func newGeneration(on buffer: inout Tilemap) {
-      buffer.tiles.transform { pair in
-         let liveNeighborCount = pair.key.neighbors
-            .compactMap(tile(at:))
-            .reduce(into: 0) { count, tile in
-               if tile.isAlive { count += 1 }
-         }
-         pair.value = self[pair.key].willLive(given: liveNeighborCount) ? .alive : .dead
+   mutating func newGeneration() {
+      tiles.forEach { point, tile in
+         evolve(at: point, tile: tile)
       }
+      (tiles, buffer) = (buffer, tiles)
+   }
+
+   private mutating func evolve(at point: Point, tile: Tile) {
+      let liveNeighborCount = point.neighbors
+         .compactMap(tile(at:))
+         .filter(\.isAlive)
+         .count
+      buffer[point] = tile.willLive(given: liveNeighborCount) ? .alive : .dead
+   }
+
+   mutating func toggleTile(at point: Point) {
+      guard var tile = tiles[point] else { return }
+      tile.toggle()
+      tiles[point] = tile
    }
 
    mutating func resize(forNewWidth newWidth: Int, newHeight: Int) {
       guard newWidth != width || newHeight != height
          else { return }
-      let oldTiles = self.tiles
-      self = Tilemap(width: newWidth, height: newHeight)
-      for (point, tile) in oldTiles {
-         guard self.contains(point: point) else { continue }
-         self.tiles[point] = tile
+
+      self.buffer = tiles
+   }
+
+   static func makeTiles(forWidth width: Int, height: Int) -> [Point: Tile] {
+      var tiles = [Point: Tile]()
+      for column in 0..<height {
+         for row in 0..<width {
+            tiles[Point(x: row, y: column)] = .dead
+         }
+      }
+      return tiles
+   }
+
+   private mutating func forEach(_ body: (Point) throws -> Void) rethrows {
+      for column in 0..<height {
+         for row in 0..<width {
+            try body(Point(x: row, y: column))
+         }
       }
    }
 }
@@ -97,28 +94,10 @@ extension Tilemap {
 // MARK: - Tiles / Points
 
 extension Tilemap {
-   typealias Point = Vector
-
    var tileCount: Int { tiles.count }
 
-   func tileIndex(forX x: Int, y: Int) -> Int {
-      (y * width) + x
-   }
-
-   func contains(tileIndex: Int) -> Bool {
-      tileIndex < tileCount && tileIndex >= 0
-   }
-
-   func point(fromIndex index: Int) -> Point {
-      Point(x: index % width, y: index / width)
-   }
-
    func contains(point: Point) -> Bool {
-      tiles.keyValuePairs[point] != nil
-   }
-
-   func tileIndex(for point: Point) -> Int {
-      tileIndex(forX: point.x, y: point.y)
+      (0..<width).contains(point.x) && (0..<height).contains(point.y)
    }
 
    func tile(at point: Point) -> Tile? {
@@ -141,41 +120,6 @@ extension Tilemap {
    }
 }
 
-// MARK: - Sequence
-
-extension Tilemap: Sequence {
-   struct Iterator: IteratorProtocol {
-      var index: Point
-      let tilemap: Tilemap
-
-      init(tilemap: Tilemap) {
-         self.index = Point()
-         self.tilemap = tilemap
-      }
-
-      mutating func next() -> Tile? {
-         guard let tile = tilemap.tile(at: index) else { return nil }
-         self.index = tilemap.nextPoint(from: index)
-         return tile
-      }
-   }
-
-   func makeIterator() -> Iterator {
-      Iterator(tilemap: self)
-   }
-}
-
-// MARK: - Collection
-
-extension Tilemap: Collection {
-   var startIndex: Int { 0 }
-   var endIndex: Int { tiles.endIndex }
-
-   func index(after i: Int) -> Int {
-      i + 1
-   }
-}
-
 // MARK: - Random
 
 extension Tilemap {
@@ -186,10 +130,10 @@ extension Tilemap {
       gen: inout RNG
    ) -> Tilemap {
       var map = Tilemap(width: width, height: height)
-      for i in 0 ..< map.tileCount {
-         let point = map.point(fromIndex: i)
-         map[point] = .random(liveChance: liveRatio, using: &gen)
+      for point in map.tiles.keys {
+         map.tiles[point] = .random(liveChance: liveRatio, using: &gen)
       }
+
       return map
    }
 

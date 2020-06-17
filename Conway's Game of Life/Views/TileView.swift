@@ -12,7 +12,6 @@ import SwiftUI
 struct TileView: View {
    @Binding var tile: Tile
    var isEditable: Bool
-   var onTap: ((Tile) -> Void)?
 
    @Environment(\.colorScheme) var colorScheme
 
@@ -23,26 +22,21 @@ struct TileView: View {
    }
 
    func tileTapped() {
-      onTap?(tile)
       tile.toggle()
    }
 
-   func color(for systemMode: ColorScheme, isAlive: Bool) -> Color {
-      !isAlive ? color(from: systemMode) : color(from: systemMode.opposite)
-   }
-
-   func color(from systemMode: ColorScheme) -> Color {
-      systemMode == .dark ? .black : .white
+   private func color(for systemMode: ColorScheme, isAlive: Bool) -> Color {
+      !isAlive ? systemMode.color : systemMode.opposite.color
    }
 }
 
-struct TileView_Previews: PreviewProvider {
-   static var previews: some View {
-      TileView(
-         tile: Binding(get: { .dead }, set: { _ in }),
-         isEditable: true)
-   }
-}
+//struct TileView_Previews: PreviewProvider {
+//   static var previews: some View {
+//      TileView(
+//         tile: Binding(get: { .dead }, set: { _ in }),
+//         isEditable: true)
+//   }
+//}
 
 
 extension ColorScheme {
@@ -51,5 +45,9 @@ extension ColorScheme {
       case .dark: return .light
       default: return .dark
       }
+   }
+
+   var color: Color {
+      self == .dark ? .black : .white
    }
 }

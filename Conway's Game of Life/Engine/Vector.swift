@@ -32,12 +32,12 @@ extension Vector {
    static var downLeft: Vector { Vector(x: -1, y: 1) }
    static var downRight: Vector { Vector(x: 1, y: 1) }
 
-   static var neighborVectors: [Vector] {
+   static var neighborVectors: Set<Vector> {
       [.up, .upRight, .right, .downRight, .down, .downLeft, .left, .upLeft]
    }
 
-   var neighbors: [Vector] {
-      Self.neighborVectors.map { self + $0 }
+   var neighbors: Set<Vector> {
+      Set(Self.neighborVectors.lazy.map { self + $0 })
    }
 }
 
