@@ -16,9 +16,11 @@ class GameEngine: ObservableObject {
    @Published var tilemap: Tilemap
    @Published private(set) var generation: Int = 0
    @Published private(set) var isRunning: Bool = false
-   @Published var framerate: Double {
+   var framerate: Double {
       didSet { frameFrequency = newFrameFrequency() }
    }
+
+   @Published private(set) var actualFrameRate: Double = 0
 
    private var bufferMap: Tilemap
    private lazy var frameFrequency = newFrameFrequency()
@@ -44,7 +46,7 @@ extension GameEngine {
    }
 
    func advanceGeneration() {
-      self.updateThread.async {
+      updateThread.async {
          self.update()
       }
    }
@@ -60,7 +62,7 @@ extension GameEngine {
    }
 
    private func main() {
-      self.updateThread.async { [weak self] in
+      updateThread.async { [weak self] in
          autoreleasepool {
             while self?.isRunning == true {
                guard let self = self else { return }
@@ -68,6 +70,9 @@ extension GameEngine {
                let deltaTime = currentTime - self.lastUpdateTime
                if deltaTime < self.frameFrequency {
                   continue
+               }
+               DispatchQueue.main.async {
+                  self.actualFrameRate = 1 / deltaTime
                }
                self.update()
                self.lastUpdateTime = currentTime

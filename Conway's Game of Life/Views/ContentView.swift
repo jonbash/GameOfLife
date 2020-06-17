@@ -33,21 +33,32 @@ struct ContentView: View {
    // MARK: - Body
 
    var body: some View {
-      VStack(spacing: 20) {
+      VStack(spacing: 16) {
          tilemapSizeControls()
-
          tilemapContentControls()
-
          framerateControls()
-
          progressionControls()
+         framerateIndicator()
 
-         TilemapView(
-            tilemap: $gameEngine.tilemap,
-            isEditable: !gameEngine.isRunning)
+         VStack {
+            TilemapView(
+               tilemap: $gameEngine.tilemap,
+               isEditable: !gameEngine.isRunning)
 
-         Text("Generation: \(gameEngine.generation)")
-            .font(.headline)
+            HStack {
+               HStack {
+                  Text("Current size:")
+
+                  Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
+                     .fontWeight(.bold)
+               }.font(.caption)
+
+               Spacer()
+
+               Text("Generation: \(gameEngine.generation)")
+                  .font(.headline)
+            }.padding(.horizontal, 20)
+         }
       }
    }
 
@@ -95,8 +106,18 @@ struct ContentView: View {
          Slider(
             value: $gameEngine.framerate,
             in: gameEngine.framerateRange)
-         Text(framerateString() + " gens/sec")
+         Text(framerateString(from: gameEngine.framerate) + " gens/sec")
       }.padding(.horizontal, 20)
+   }
+
+   private func framerateIndicator() -> some View {
+      Group {
+         if gameEngine.isRunning {
+            Text(framerateString(from: gameEngine.actualFrameRate) + "gens/sec")
+         } else {
+            EmptyView()
+         }
+      }
    }
 
    private func progressionControls() -> some View {
@@ -161,9 +182,9 @@ struct ContentView: View {
       }
    }
 
-   private func framerateString() -> String {
+   private func framerateString(from value: Double) -> String {
       framerateFormatter.string(from:
-         NSNumber(value: gameEngine.framerate)) ?? "??"
+         NSNumber(value: value)) ?? "??"
    }
 }
 
