@@ -20,6 +20,7 @@ class GameEngine: ObservableObject {
       didSet { frameFrequency = newFrameFrequency() }
    }
 
+   private var bufferMap: Tilemap
    private lazy var frameFrequency = newFrameFrequency()
    private var lastUpdateTime = CFAbsoluteTimeGetCurrent()
    private let updateThread = DispatchQueue.global()
@@ -30,6 +31,7 @@ class GameEngine: ObservableObject {
       framerate: Double = 2
    ) {
       self.tilemap = tilemap
+      self.bufferMap = tilemap
       self.framerate = framerate
    }
 }
@@ -49,6 +51,7 @@ extension GameEngine {
 
    func resizeMap(width: Int, height: Int) {
       tilemap.resize(forNewWidth: width, newHeight: height)
+      bufferMap = tilemap
    }
 
    private func start() {
@@ -60,28 +63,30 @@ extension GameEngine {
       self.updateThread.async { [weak self] in
          autoreleasepool {
             while self?.isRunning == true {
+               guard let self = self else { return }
                let currentTime = CFAbsoluteTimeGetCurrent()
-               let deltaTime = currentTime - (self?.lastUpdateTime ?? currentTime)
-               if deltaTime < self?.frameFrequency {
-//                  usleep(4000)
+               let deltaTime = currentTime - self.lastUpdateTime
+               if deltaTime < self.frameFrequency {
                   continue
                }
-               self?.update()
-               self?.lastUpdateTime = currentTime
+               self.update()
+               self.lastUpdateTime = currentTime
             }
          }
       }
    }
 
-   private func stop() {
-      isRunning = false
-   }
-
    private func update() {
-      tilemap.newGeneration()
+      let changes = self.bufferMap.newGenerationChanges()
       DispatchQueue.main.sync {
+         self.tilemap.apply(changes)
          self.generation += 1
       }
+      bufferMap = tilemap
+   }
+
+   private func stop() {
+      isRunning = false
    }
 
    private func newFrameFrequency() -> Double {

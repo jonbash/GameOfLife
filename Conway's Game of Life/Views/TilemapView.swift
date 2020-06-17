@@ -13,7 +13,6 @@ struct TilemapView: View {
    var isEditable: Bool
 
    var spacing: CGFloat = 0.0
-   var onTileTap: ((Tile) -> Void)?
 
    var body: some View {
       VStack(spacing: spacing) {
@@ -21,7 +20,7 @@ struct TilemapView: View {
             HStack(spacing: self.spacing) {
                ForEach(0 ..< self.tilemap.width, id: \.self) { column in
                   TileView(
-                     tile: self.$tilemap[Point(x: row, y: column)],
+                     tile: self.$tilemap[Point(x: column, y: row)],
                      isEditable: self.isEditable)
                }
             }

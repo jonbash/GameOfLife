@@ -18,13 +18,15 @@ struct Tilemap {
    private(set) var width: Int
    private(set) var height: Int
 
-   private var buffer = [Point: Tile]()
-
    init(width: Int = 1, height: Int = 1) {
-      self.tiles = Tilemap.makeTiles(forWidth: width, height: height)
-      self.buffer = tiles
       self.width = width
       self.height = height
+      self.forEach({ point in
+         tiles[point] = .dead
+      })
+      for _ in 1...8 {
+         threadBuffer.add(DispatchQueue.global())
+      }
    }
 }
 
@@ -44,49 +46,48 @@ extension Tilemap {
 // MARK: - Update
 
 extension Tilemap {
-   mutating func newGeneration() {
-      tiles.forEach { point, tile in
-         evolve(at: point, tile: tile)
+   func newGenerationChanges() -> Set<Point> {
+      self.compactMapToSet { point in
+         let tileIsAlive = tiles[point]?.isAlive ?? false
+         var count = 0
+         var tileWillLive: Bool = false
+         for neighbor in point.neighbors {
+            if tiles[neighbor]?.isAlive == true {
+               count += 1
+            } else { continue }
+
+            if count == 3 || (tileIsAlive && count == 2) {
+               tileWillLive = true
+            } else if count >= 4 {
+               tileWillLive = false
+               break
+            }
+         }
+         return tileIsAlive != tileWillLive ? point : nil
       }
-      (tiles, buffer) = (buffer, tiles)
    }
 
-   private mutating func evolve(at point: Point, tile: Tile) {
-      let liveNeighborCount = point.neighbors
-         .compactMap(tile(at:))
-         .filter(\.isAlive)
-         .count
-      buffer[point] = tile.willLive(given: liveNeighborCount) ? .alive : .dead
+   mutating func apply(_ changes: Set<Point>) {
+      changes.forEach { point in
+         if let tile = tiles[point] {
+            tiles[point] = tile.toggled()
+         } else {
+            tiles[point] = .alive
+         }
+      }
    }
 
    mutating func toggleTile(at point: Point) {
-      guard var tile = tiles[point] else { return }
-      tile.toggle()
-      tiles[point] = tile
+      tiles[point] = (tiles[point] ?? .dead).toggled()
    }
 
    mutating func resize(forNewWidth newWidth: Int, newHeight: Int) {
       guard newWidth != width || newHeight != height
          else { return }
-
-      self.buffer = tiles
-   }
-
-   static func makeTiles(forWidth width: Int, height: Int) -> [Point: Tile] {
-      var tiles = [Point: Tile]()
-      for column in 0..<height {
-         for row in 0..<width {
-            tiles[Point(x: row, y: column)] = .dead
-         }
-      }
-      return tiles
-   }
-
-   private mutating func forEach(_ body: (Point) throws -> Void) rethrows {
-      for column in 0..<height {
-         for row in 0..<width {
-            try body(Point(x: row, y: column))
-         }
+      width = newWidth
+      height = newHeight
+      self.forEach { point in
+         tiles[point] = tiles[point] ?? .dead
       }
    }
 }
@@ -117,6 +118,40 @@ extension Tilemap {
 
    func tile(from point: Point, by diff: Vector) -> Tile? {
       tile(at: point + diff)
+   }
+}
+
+// MARK: - Functional
+
+extension Tilemap {
+   private func forEach(_ body: (Point) throws -> Void) rethrows {
+      for column in 0..<width {
+         for row in 0..<height {
+            try body(Point(x: column, y: row))
+         }
+      }
+   }
+
+   private func mapToSet<T: Hashable>(
+      _ transform: (Point) throws -> T
+   ) rethrows -> Set<T> {
+      var set = Set<T>()
+      try self.forEach { point in
+         set.insert(try transform(point))
+      }
+      return set
+   }
+
+   private func compactMapToSet<T: Hashable>(
+      _ transform: (Point) throws -> T?
+   ) rethrows -> Set<T> {
+      var set = Set<T>()
+      try self.forEach { point in
+         if let item = try transform(point) {
+            set.insert(item)
+         }
+      }
+      return set
    }
 }
 
