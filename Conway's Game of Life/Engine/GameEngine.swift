@@ -71,11 +71,13 @@ extension GameEngine {
                if deltaTime < self.frameFrequency {
                   continue
                }
+               self.lastUpdateTime = currentTime
                DispatchQueue.main.async {
                   self.actualFrameRate = 1 / deltaTime
                }
-               self.update()
-               self.lastUpdateTime = currentTime
+               DispatchQueue.global().async {
+                  self.update()
+               }
             }
          }
       }

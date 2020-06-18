@@ -34,31 +34,37 @@ struct ContentView: View {
 
    var body: some View {
       VStack(spacing: 16) {
-         tilemapSizeControls()
-         tilemapContentControls()
-         framerateControls()
-         progressionControls()
+         TilemapView(
+            tilemap: $gameEngine.tilemap,
+            isEditable: !gameEngine.isRunning)
+
+         HStack {
+            HStack {
+               Text("Current size:")
+
+               Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
+                  .fontWeight(.bold)
+            }.font(.caption)
+
+            Spacer()
+
+            Divider().frame(height: 20, alignment: .center)
+
+            Spacer()
+
+            Text("Generation: \(gameEngine.generation)")
+               .font(.headline)
+         }.padding(.horizontal, 20)
+
          framerateIndicator()
 
-         VStack {
-            TilemapView(
-               tilemap: $gameEngine.tilemap,
-               isEditable: !gameEngine.isRunning)
+         Divider()
 
-            HStack {
-               HStack {
-                  Text("Current size:")
+         tilemapSizeControls()
+         tilemapContentControls()
 
-                  Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
-                     .fontWeight(.bold)
-               }.font(.caption)
-
-               Spacer()
-
-               Text("Generation: \(gameEngine.generation)")
-                  .font(.headline)
-            }.padding(.horizontal, 20)
-         }
+         framerateControls()
+         progressionControls()
       }
    }
 

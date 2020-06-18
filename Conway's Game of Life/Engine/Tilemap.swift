@@ -7,16 +7,15 @@
 //
 
 import Foundation
-import OrderedDictionary
 
 
 typealias Point = Vector
 
 
 struct Tilemap {
-   private var tiles = [Point: Tile]()
-   private(set) var width: Int
-   private(set) var height: Int
+   @Atomic private var tiles = [Point: Tile]()
+   @Atomic private(set) var width: Int = 1
+   @Atomic private(set) var height: Int = 1
 
    init(width: Int = 1, height: Int = 1) {
       self.width = width
@@ -84,6 +83,10 @@ extension Tilemap {
       self.forEach { point in
          tiles[point] = tiles[point] ?? .dead
       }
+   }
+
+   mutating func setTile(_ tile: Tile, for point: Point) {
+      tiles[point] = tile
    }
 }
 
@@ -161,9 +164,8 @@ extension Tilemap {
    ) -> Tilemap {
       var map = Tilemap(width: width, height: height)
       for point in map.tiles.keys {
-         map.tiles[point] = .random(liveChance: liveRatio, using: &gen)
+         map.setTile(.random(liveChance: liveRatio, using: &gen), for: point)
       }
-
       return map
    }
 
