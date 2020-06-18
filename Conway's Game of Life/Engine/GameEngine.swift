@@ -12,7 +12,6 @@ import UIKit
 
 
 class GameEngine: ObservableObject {
-   static var defaultSize: Int { 25 }
    @Published var tilemap: Tilemap
    @Published private(set) var generation: Int = 0
    @Published private(set) var isRunning: Bool = false
@@ -39,6 +38,11 @@ class GameEngine: ObservableObject {
 }
 
 extension GameEngine {
+
+   // MARK: - Public
+   
+   static var defaultSize: Int { 25 }
+
    var framerateRange: ClosedRange<Double> { 1...20 }
 
    func toggleRunning() {
@@ -65,6 +69,8 @@ extension GameEngine {
       tilemap = Tilemap(width: tilemap.width, height: tilemap.height)
       generation = 0
    }
+
+   // MARK: - Game Loop
 
    private func start() {
       isRunning = true

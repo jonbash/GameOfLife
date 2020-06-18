@@ -20,7 +20,8 @@ struct TilemapView: View {
             HStack(spacing: self.spacing) {
                ForEach(0 ..< self.tilemap.width, id: \.self) { column in
                   TileView(
-                     tile: self.$tilemap[Point(x: column, y: row)],
+                     tilemap: self.$tilemap,
+                     point: Point(x: column, y: row),
                      isEditable: self.isEditable)
                }
             }

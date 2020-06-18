@@ -13,9 +13,11 @@ typealias Point = Vector
 
 
 struct Tilemap {
-   @Atomic private var tiles = [Point: Tile]()
-   @Atomic private(set) var width: Int = 1
-   @Atomic private(set) var height: Int = 1
+   private var tiles = [Point: Tile]()
+   private(set) var width: Int = 1
+   private(set) var height: Int = 1
+
+   private(set) var population: Int = 0
 
    init(width: Int = 1, height: Int = 1) {
       self.width = width
@@ -29,7 +31,6 @@ struct Tilemap {
 extension Tilemap {
    subscript(_ point: Point) -> Tile {
       get { tiles[point, default: .dead] }
-      set { tiles[point] = newValue }
    }
 
    subscript(_ x: Int, _ y: Int) -> Tile? {
@@ -64,15 +65,22 @@ extension Tilemap {
    mutating func apply(_ changes: Set<Point>) {
       changes.forEach { point in
          if let tile = tiles[point] {
+            population += tile.isDead ? 1 : -1
             tiles[point] = tile.toggled()
          } else {
             tiles[point] = .alive
+            population += 1
          }
       }
    }
 
    mutating func toggleTile(at point: Point) {
       tiles[point] = (tiles[point] ?? .dead).toggled()
+      if tiles[point]!.isAlive {
+         population += 1
+      } else {
+         population -= 1
+      }
    }
 
    mutating func resize(forNewWidth newWidth: Int, newHeight: Int) {
@@ -80,13 +88,21 @@ extension Tilemap {
          else { return }
       width = newWidth
       height = newHeight
+      population = 0
       self.forEach { point in
-         tiles[point] = tiles[point] ?? .dead
+         let tile = tiles[point] ?? .dead
+         tiles[point] = tile
+         if tile.isAlive {
+            population += 1
+         }
       }
    }
 
    mutating func setTile(_ tile: Tile, for point: Point) {
+      let oldTile = tiles[point]
       tiles[point] = tile
+      guard oldTile ?? .dead != tile else { return }
+      population += tile.isAlive ? 1 : -1
    }
 }
 
@@ -102,20 +118,6 @@ extension Tilemap {
    func tile(at point: Point) -> Tile? {
       guard self.contains(point: point) else { return nil }
       return tiles[point]
-   }
-
-   func nextPoint(from point: Point) -> Point {
-      var newPoint = point
-      newPoint.x += 1
-      if newPoint.x >= width {
-         newPoint.y += newPoint.x / width
-         newPoint.x = newPoint.x % width
-      }
-      return newPoint
-   }
-
-   func tile(from point: Point, by diff: Vector) -> Tile? {
-      tile(at: point + diff)
    }
 }
 
@@ -163,8 +165,9 @@ extension Tilemap {
       gen: inout RNG
    ) -> Tilemap {
       var map = Tilemap(width: width, height: height)
-      for point in map.tiles.keys {
-         map.setTile(.random(liveChance: liveRatio, using: &gen), for: point)
+      map.forEach { point in
+         let tile = Tile.random(liveChance: liveRatio, using: &gen)
+         map.setTile(tile, for: point)
       }
       return map
    }

@@ -10,19 +10,21 @@ import SwiftUI
 
 
 struct TileView: View {
-   @Binding var tile: Tile
-   var isEditable: Bool
+   @Binding var tilemap: Tilemap
+   let point: Point
+   let isEditable: Bool
 
    @Environment(\.colorScheme) var colorScheme
 
    var body: some View {
       Button(action: tileTapped) {
-         color(for: colorScheme, isAlive: tile.isAlive)
+         color(for: colorScheme,
+               isAlive: tilemap.tile(at: point)?.isAlive ?? false)
       }.disabled(!isEditable)
    }
 
    func tileTapped() {
-      tile.toggle()
+      tilemap.toggleTile(at: point)
    }
 
    private func color(for systemMode: ColorScheme, isAlive: Bool) -> Color {

@@ -13,7 +13,6 @@ struct ContentView: View {
 
    @State private var newWidthText: String = ""
    @State private var newHeightText: String = ""
-
    @State private var showingAboutView = false
 
    private let framerateFormatter = configure(NumberFormatter()) {
@@ -23,13 +22,6 @@ struct ContentView: View {
       $0.minimum = 1
       $0.maximum = 100
       $0.maximumFractionDigits = 0
-   }
-
-   private var newWidth: Int? {
-      widthHeightFormatter.number(from: newWidthText) as? Int
-   }
-   private var newHeight: Int? {
-      widthHeightFormatter.number(from: newHeightText) as? Int
    }
 
    // MARK: - Body
@@ -42,7 +34,11 @@ struct ContentView: View {
 
          Spacer()
 
-         framerateIndicator()
+         HStack {
+            framerateIndicator()
+            Spacer()
+            populationCount()
+         }.padding()
 
          TilemapView(
             tilemap: self.$gameEngine.tilemap,
@@ -63,9 +59,11 @@ struct ContentView: View {
          AboutView()
       }
    }
+}
 
-   // MARK: - SubViews
+// MARK: - SubViews
 
+extension ContentView {
    private func tilemapSizeControls() -> some View {
       HStack(spacing: 12) {
          HStack(spacing: 8) {
@@ -81,7 +79,6 @@ struct ContentView: View {
          }.disabled(newWidth == nil || newHeight == nil)
       }
    }
-
    private func tilemapContentControls() -> some View {
       HStack(spacing: 8) {
          Button(action: gameEngine.randomize) {
@@ -93,7 +90,6 @@ struct ContentView: View {
          }
       }
    }
-
    private func framerateControls() -> some View {
       HStack(spacing: 8) {
          Slider(
@@ -102,7 +98,6 @@ struct ContentView: View {
          Text(framerateString(from: gameEngine.framerate) + " gens/sec")
       }.padding(.horizontal, 20)
    }
-
    private func framerateIndicator() -> some View {
       Group {
          if gameEngine.isRunning {
@@ -112,7 +107,9 @@ struct ContentView: View {
          }
       }
    }
-
+   private func populationCount() -> some View {
+      Text("Population: \(gameEngine.tilemap.population)")
+   }
    private func progressionControls() -> some View {
       HStack(spacing: 20) {
          Button(action: gameEngine.toggleRunning) {
@@ -134,7 +131,6 @@ struct ContentView: View {
          }
       }
    }
-
    private func mapInfo() -> some View {
       HStack {
          HStack {
@@ -151,8 +147,17 @@ struct ContentView: View {
             .font(.headline)
       }.padding(.horizontal, 20)
    }
+}
 
-   // MARK: - Helpers
+// MARK: - Helpers
+
+extension ContentView {
+   private var newWidth: Int? {
+      widthHeightFormatter.number(from: newWidthText) as? Int
+   }
+   private var newHeight: Int? {
+      widthHeightFormatter.number(from: newHeightText) as? Int
+   }
 
    private var defaultButtonBG: Color {
       Color(red: 0.5,
@@ -160,7 +165,6 @@ struct ContentView: View {
             blue: 0.8,
             opacity: 0.5)
    }
-
    private func prepareToResizeTilemap() {
       guard
          let newWidth = newWidth,
@@ -171,7 +175,6 @@ struct ContentView: View {
       }
       gameEngine.resizeMap(width: newWidth, height: newHeight)
    }
-
    private func labeledTextField(
       _ labelTitle: String,
       placeholderText: String,
@@ -186,7 +189,6 @@ struct ContentView: View {
             .frame(maxWidth: 100)
       }
    }
-
    private func framerateString(from value: Double) -> String {
       framerateFormatter.string(from:
          NSNumber(value: value)) ?? "??"
