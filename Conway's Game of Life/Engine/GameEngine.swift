@@ -56,6 +56,16 @@ extension GameEngine {
       bufferMap = tilemap
    }
 
+   func randomize() {
+      tilemap = Tilemap.random(width: tilemap.width, height: tilemap.height)
+      generation = 0
+   }
+
+   func clear() {
+      tilemap = Tilemap(width: tilemap.width, height: tilemap.height)
+      generation = 0
+   }
+
    private func start() {
       isRunning = true
       main()

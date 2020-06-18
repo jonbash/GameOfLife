@@ -19,6 +19,10 @@ func configure<T>(
    return value
 }
 
+func undefined<T>(_ message: String = "") -> T {
+   fatalError("Undefined: \(message)")
+}
+
 
 extension Optional where Wrapped: Comparable {
    static func < (lhs: Self, rhs: Self) -> Bool {

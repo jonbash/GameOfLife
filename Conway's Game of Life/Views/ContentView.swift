@@ -14,6 +14,8 @@ struct ContentView: View {
    @State private var newWidthText: String = ""
    @State private var newHeightText: String = ""
 
+   @State private var showingAboutView = false
+
    private let framerateFormatter = configure(NumberFormatter()) {
       $0.maximumFractionDigits = 2
    }
@@ -34,37 +36,31 @@ struct ContentView: View {
 
    var body: some View {
       VStack(spacing: 16) {
-         TilemapView(
-            tilemap: $gameEngine.tilemap,
-            isEditable: !gameEngine.isRunning)
+         Button(action: { self.showingAboutView = true }) {
+            Text("About Conway's Game of Life")
+         }
 
-         HStack {
-            HStack {
-               Text("Current size:")
-
-               Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
-                  .fontWeight(.bold)
-            }.font(.caption)
-
-            Spacer()
-
-            Divider().frame(height: 20, alignment: .center)
-
-            Spacer()
-
-            Text("Generation: \(gameEngine.generation)")
-               .font(.headline)
-         }.padding(.horizontal, 20)
+         Spacer()
 
          framerateIndicator()
 
-         Divider()
+         TilemapView(
+            tilemap: self.$gameEngine.tilemap,
+            isEditable: !self.gameEngine.isRunning)
 
-         tilemapSizeControls()
-         tilemapContentControls()
+         Group {
+            mapInfo()
 
-         framerateControls()
-         progressionControls()
+            Divider()
+
+            tilemapSizeControls()
+            tilemapContentControls()
+
+            framerateControls()
+            progressionControls()
+         }.buttonStyle(LifeButtonStyle())
+      }.sheet(isPresented: $showingAboutView) {
+         AboutView()
       }
    }
 
@@ -83,27 +79,18 @@ struct ContentView: View {
          Button(action: prepareToResizeTilemap) {
             Text("Resize")
          }.disabled(newWidth == nil || newHeight == nil)
-            .jbButtonStyle(background: defaultButtonBG)
       }
    }
 
    private func tilemapContentControls() -> some View {
       HStack(spacing: 8) {
-         Button(action: {
-            self.gameEngine.tilemap = Tilemap.random(
-               width: self.gameEngine.tilemap.width,
-               height: self.gameEngine.tilemap.height)
-         }) {
+         Button(action: gameEngine.randomize) {
             Text("Randomize")
-         }.jbButtonStyle(background: defaultButtonBG)
+         }
 
-         Button(action: {
-            self.gameEngine.tilemap = Tilemap(
-               width: self.gameEngine.tilemap.width,
-               height: self.gameEngine.tilemap.height)
-         }) {
+         Button(action: gameEngine.clear) {
             Text("Clear")
-         }.jbButtonStyle(background: defaultButtonBG)
+         }
       }
    }
 
@@ -138,19 +125,31 @@ struct ContentView: View {
                   Image(systemName: "forward.fill")
                }
             }
-         }.jbButtonStyle(background:
-            Color(red: 0.5,
-                  green: 0.9,
-                  blue: 0.8,
-                  opacity: 0.5))
+         }
          Button(action: gameEngine.advanceGeneration) {
             HStack(spacing: 2) {
                Text("Advance")
                Image(systemName: "forward.end.fill")
             }.disabled(gameEngine.isRunning)
-               .jbButtonStyle(background: defaultButtonBG)
          }
       }
+   }
+
+   private func mapInfo() -> some View {
+      HStack {
+         HStack {
+            Text("Current size:")
+            Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
+               .fontWeight(.bold)
+         }.font(.caption)
+
+         Spacer()
+         Divider().frame(height: 20, alignment: .center)
+         Spacer()
+
+         Text("Generation: \(gameEngine.generation)")
+            .font(.headline)
+      }.padding(.horizontal, 20)
    }
 
    // MARK: - Helpers
@@ -202,14 +201,18 @@ struct ContentView_Previews: PreviewProvider {
    }
 }
 
-fileprivate extension View {
-   func jbButtonStyle<BG: View>(
-      background: BG
-   ) -> some View {
-      self
+struct LifeButtonStyle: ButtonStyle {
+   private var bg: Color
+
+   init(bg: Color? = nil) {
+      self.bg = bg ?? Color(red: 0.5, green: 0.9, blue: 0.8, opacity: 0.5)
+   }
+
+   func makeBody(configuration: ButtonStyleConfiguration) -> some View {
+      configuration.label
          .foregroundColor(.black)
          .padding(4)
-         .background(background)
+         .background(bg)
          .cornerRadius(8)
          .shadow(radius: 2)
    }
