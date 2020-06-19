@@ -8,11 +8,14 @@
 
 import SwiftUI
 
+
 struct TilemapView: View {
    @Binding var tilemap: Tilemap
    var isEditable: Bool
 
-   var spacing: CGFloat = 0.0
+   @Environment(\.colorScheme) var colorScheme
+
+   private let spacing: CGFloat = 0.0
 
    var body: some View {
       VStack(spacing: spacing) {
@@ -20,15 +23,12 @@ struct TilemapView: View {
             HStack(spacing: self.spacing) {
                ForEach(0 ..< self.tilemap.width, id: \.self) { column in
                   TileView(
-                     tilemap: self.$tilemap,
-                     point: Point(x: column, y: row),
+                     tile: self.$tilemap[Point(x: column, y: row)],
                      isEditable: self.isEditable)
                }
             }
          }
-      }.aspectRatio(CGFloat(tilemap.width) / CGFloat(tilemap.height),
-                    contentMode: .fit)
-         .border(Color.black)
+      }
    }
 }
 
@@ -39,3 +39,6 @@ struct TilemapView_Previews: PreviewProvider {
          isEditable: true)
    }
 }
+
+
+

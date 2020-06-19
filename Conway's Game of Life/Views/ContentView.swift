@@ -202,20 +202,3 @@ struct ContentView_Previews: PreviewProvider {
       ContentView()
    }
 }
-
-struct LifeButtonStyle: ButtonStyle {
-   private var bg: Color
-
-   init(bg: Color? = nil) {
-      self.bg = bg ?? Color(red: 0.5, green: 0.9, blue: 0.8, opacity: 0.5)
-   }
-
-   func makeBody(configuration: ButtonStyleConfiguration) -> some View {
-      configuration.label
-         .foregroundColor(.black)
-         .padding(4)
-         .background(bg)
-         .cornerRadius(8)
-         .shadow(radius: 2)
-   }
-}
