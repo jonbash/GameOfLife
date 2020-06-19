@@ -31,6 +31,7 @@ struct Tilemap {
 extension Tilemap {
    subscript(_ point: Point) -> Tile {
       get { tiles[point, default: .dead] }
+      set { tiles[point] = newValue }
    }
 
    subscript(_ x: Int, _ y: Int) -> Tile? {
@@ -124,7 +125,7 @@ extension Tilemap {
 // MARK: - Functional
 
 extension Tilemap {
-   private func forEach(_ body: (Point) throws -> Void) rethrows {
+   func forEach(_ body: (Point) throws -> Void) rethrows {
       for column in 0..<width {
          for row in 0..<height {
             try body(Point(x: column, y: row))
@@ -132,7 +133,7 @@ extension Tilemap {
       }
    }
 
-   private func mapToSet<T: Hashable>(
+   func mapToSet<T: Hashable>(
       _ transform: (Point) throws -> T
    ) rethrows -> Set<T> {
       var set = Set<T>()
@@ -142,7 +143,7 @@ extension Tilemap {
       return set
    }
 
-   private func compactMapToSet<T: Hashable>(
+   func compactMapToSet<T: Hashable>(
       _ transform: (Point) throws -> T?
    ) rethrows -> Set<T> {
       var set = Set<T>()

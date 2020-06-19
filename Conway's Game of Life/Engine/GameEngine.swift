@@ -25,6 +25,7 @@ class GameEngine: ObservableObject {
    private lazy var frameFrequency = newFrameFrequency()
    private var lastUpdateTime = CFAbsoluteTimeGetCurrent()
    private let updateThread = DispatchQueue.global()
+   private var lock = NSLock()
 
    init(
       tilemap: Tilemap = .init(width: GameEngine.defaultSize,
@@ -79,21 +80,19 @@ extension GameEngine {
 
    private func main() {
       updateThread.async { [weak self] in
-         autoreleasepool {
-            while self?.isRunning == true {
-               guard let self = self else { return }
-               let currentTime = CFAbsoluteTimeGetCurrent()
-               let deltaTime = currentTime - self.lastUpdateTime
-               if deltaTime < self.frameFrequency {
-                  continue
-               }
-               self.lastUpdateTime = currentTime
-               DispatchQueue.main.async {
-                  self.actualFrameRate = 1 / deltaTime
-               }
-               DispatchQueue.global().async {
-                  self.update()
-               }
+         while self?.isRunning == true {
+            guard let self = self else { return }
+            let currentTime = CFAbsoluteTimeGetCurrent()
+            let deltaTime = currentTime - self.lastUpdateTime
+            if deltaTime < self.frameFrequency {
+               continue
+            }
+            self.lastUpdateTime = currentTime
+            DispatchQueue.main.async {
+               self.actualFrameRate = 1 / deltaTime
+            }
+            DispatchQueue.global().sync {
+               self.update()
             }
          }
       }
