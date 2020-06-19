@@ -43,6 +43,7 @@ struct ContentView: View {
          TilemapView(
             tilemap: self.$gameEngine.tilemap,
             isEditable: !self.gameEngine.isRunning)
+            .border(Color.gray)
 
          Group {
             mapInfo()

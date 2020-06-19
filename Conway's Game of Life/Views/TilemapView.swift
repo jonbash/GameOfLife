@@ -51,6 +51,9 @@ class UITilemapView: UIView {
    init(tilemap: Binding<Tilemap>) {
       self._tilemap = tilemap
       super.init(frame: .zero)
+      self.addGestureRecognizer(UITapGestureRecognizer(
+         target: self,
+         action: #selector(mapWasTapped(_:))))
    }
 
    required init?(coder: NSCoder) {
@@ -58,27 +61,45 @@ class UITilemapView: UIView {
    }
 
    override func draw(_ rect: CGRect) {
-      let liveColor = UIColor.black // TODO: update from environment
-      let deadColor = UIColor.white
-      let tileSize = CGSize(
-         width: rect.width / tilemapSize.width,
-         height: rect.height / tilemapSize.height)
-      print("rect size: \(rect.size)")
-      print("tile size: \(tileSize)")
+      let isLight = (colorScheme == .light)
+      let liveColor: UIColor = isLight ? .black : .white
+      let deadColor: UIColor = isLight ? .white : .black
+      let tileSize = getTileSize(tilemapSize: tilemapSize, rect: rect)
+
       for column in 0..<tilemap.width {
          for row in 0..<tilemap.height {
-            guard let tile = tilemap.tile(at: Point(x: column, y: row))
-               else { continue }
-            let origin = CGPoint(
-               x: CGFloat(column) * tileSize.width,
-               y: CGFloat(row) * tileSize.height)
-            if tile.isAlive {
-               liveColor.set()
-            } else {
-               deadColor.set()
-            }
+            let point = Point(x: column, y: row)
+            guard let tile = tilemap.tile(at: point) else { continue }
+            let origin = getTileOrigin(point: point, tileSize: tileSize)
+            (tile.isAlive ? liveColor : deadColor).set()
             UIRectFill(CGRect(origin: origin, size: tileSize))
          }
       }
+   }
+
+   @objc
+   private func mapWasTapped(_ gesture: UIGestureRecognizer) {
+      guard isEditable else { return }
+      let touch = gesture.location(in: self)
+      let size = getTileSize(tilemapSize: tilemapSize, rect: frame)
+      let point = Point(
+         x: Int(touch.x / size.width),
+         y: Int(touch.y / size.height))
+      let touchedRect = CGRect(
+         origin: getTileOrigin(point: point, tileSize: size),
+         size: size)
+
+      tilemap.toggleTile(at: point)
+      setNeedsDisplay(touchedRect)
+   }
+
+   private func getTileOrigin(point: Point, tileSize: CGSize) -> CGPoint {
+      CGPoint(x: CGFloat(point.x) * tileSize.width,
+              y: CGFloat(point.y) * tileSize.height)
+   }
+
+   private func getTileSize(tilemapSize: CGSize, rect: CGRect) -> CGSize {
+      CGSize(width: rect.width / tilemapSize.width,
+             height: rect.height / tilemapSize.height)
    }
 }
