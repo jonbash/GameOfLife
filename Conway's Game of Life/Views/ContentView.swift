@@ -38,12 +38,13 @@ struct ContentView: View {
             framerateIndicator()
             Spacer()
             populationCount()
-         }.padding()
+         }.padding(.horizontal)
 
          TilemapView(
             tilemap: self.$gameEngine.tilemap,
             isEditable: !self.gameEngine.isRunning)
             .border(Color.gray)
+            .padding(.horizontal)
 
          Group {
             mapInfo()

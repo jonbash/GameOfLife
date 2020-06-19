@@ -20,7 +20,6 @@
 		99CB05072497CACC00082A98 /* Vector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05062497CACC00082A98 /* Vector.swift */; };
 		99CB05322497E75300082A98 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05312497E75300082A98 /* Utilities.swift */; };
 		99CB05342497EE6000082A98 /* TilemapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05332497EE6000082A98 /* TilemapView.swift */; };
-		99CB05362497EE6C00082A98 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05352497EE6C00082A98 /* TileView.swift */; };
 		99CB05382498051C00082A98 /* Rando.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB05372498051C00082A98 /* Rando.swift */; };
 		99CB053A249824F400082A98 /* GameEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99CB0539249824F400082A98 /* GameEngine.swift */; };
 		99ECFEBC249AE8E5003A63D4 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99ECFEBB249AE8E5003A63D4 /* Atomic.swift */; };
@@ -42,7 +41,6 @@
 		99CB05062497CACC00082A98 /* Vector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vector.swift; sourceTree = "<group>"; };
 		99CB05312497E75300082A98 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		99CB05332497EE6000082A98 /* TilemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilemapView.swift; sourceTree = "<group>"; };
-		99CB05352497EE6C00082A98 /* TileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
 		99CB05372498051C00082A98 /* Rando.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rando.swift; sourceTree = "<group>"; };
 		99CB0539249824F400082A98 /* GameEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameEngine.swift; sourceTree = "<group>"; };
 		99ECFEBB249AE8E5003A63D4 /* Atomic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
@@ -123,7 +121,6 @@
 			children = (
 				99CB04F12497C66F00082A98 /* ContentView.swift */,
 				99CB05332497EE6000082A98 /* TilemapView.swift */,
-				99CB05352497EE6C00082A98 /* TileView.swift */,
 				996D4EEB249BF16900BFEE48 /* AboutView.swift */,
 				996D4EED249D49AA00BFEE48 /* ViewHelpers.swift */,
 			);
@@ -227,7 +224,6 @@
 				99CB053A249824F400082A98 /* GameEngine.swift in Sources */,
 				99CB04F02497C66F00082A98 /* SceneDelegate.swift in Sources */,
 				99CB05322497E75300082A98 /* Utilities.swift in Sources */,
-				99CB05362497EE6C00082A98 /* TileView.swift in Sources */,
 				99CB04F22497C66F00082A98 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

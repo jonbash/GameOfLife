@@ -30,14 +30,8 @@ struct TilemapView: UIViewRepresentable {
    }
 }
 
-struct TilemapView_Previews: PreviewProvider {
-   static var previews: some View {
-      TilemapView(
-         tilemap: Binding(get: { .random() }, set: { _ in }),
-         isEditable: true)
-   }
-}
 
+// MARK: - UIView
 
 class UITilemapView: UIView {
    @Environment(\.colorScheme) var colorScheme
@@ -66,10 +60,13 @@ class UITilemapView: UIView {
       let deadColor: UIColor = isLight ? .white : .black
       let tileSize = getTileSize(tilemapSize: tilemapSize, rect: rect)
 
+      deadColor.set()
+      UIRectFill(rect)
+
       for column in 0..<tilemap.width {
          for row in 0..<tilemap.height {
             let point = Point(x: column, y: row)
-            guard let tile = tilemap.tile(at: point) else { continue }
+            guard let tile = tilemap.tile(at: point), tile.isAlive else { continue }
             let origin = getTileOrigin(point: point, tileSize: tileSize)
             (tile.isAlive ? liveColor : deadColor).set()
             UIRectFill(CGRect(origin: origin, size: tileSize))
@@ -101,5 +98,16 @@ class UITilemapView: UIView {
    private func getTileSize(tilemapSize: CGSize, rect: CGRect) -> CGSize {
       CGSize(width: rect.width / tilemapSize.width,
              height: rect.height / tilemapSize.height)
+   }
+}
+
+
+// MARK: - Previews
+
+struct TilemapView_Previews: PreviewProvider {
+   static var previews: some View {
+      TilemapView(
+         tilemap: Binding(get: { .random() }, set: { _ in }),
+         isEditable: true)
    }
 }
