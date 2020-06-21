@@ -48,7 +48,7 @@ extension Tilemap {
          var count = 0
          var tileWillLive: Bool = false
          for neighbor in point.neighbors {
-            if tiles[neighbor]?.isAlive == true {
+            if self.contains(point: neighbor) && tiles[neighbor]?.isAlive == true {
                count += 1
             } else { continue }
 
@@ -91,6 +91,10 @@ extension Tilemap {
       height = newHeight
       population = 0
       self.forEach { point in
+         guard self.contains(point: point) else {
+            self.tiles[point] = nil
+            return
+         }
          let tile = tiles[point] ?? .dead
          tiles[point] = tile
          if tile.isAlive {
@@ -159,27 +163,52 @@ extension Tilemap {
 // MARK: - Random
 
 extension Tilemap {
+   static var maxDensity: Double { 0.9 }
+   static var defaultSize: Int { 25 }
+   static var maxSize: Int { 200 }
+
    static func random<RNG: RandomNumberGenerator>(
       width: Int = 25,
       height: Int = 25,
-      liveRatio: Double = 0.5,
+      density: Double = 0.5,
       gen: inout RNG
    ) -> Tilemap {
+      let density = density > maxDensity ? maxDensity : density
+
+      let totalTiles = Double(width * height)
+      let populatedTiles = Int(density * totalTiles)
       var map = Tilemap(width: width, height: height)
-      map.forEach { point in
-         let tile = Tile.random(liveChance: liveRatio, using: &gen)
-         map.setTile(tile, for: point)
+
+      func newPoint() -> Point {
+         return Point(
+            x: Int.random(in: 0..<width, using: &gen),
+            y: Int.random(in: 0..<height, using: &gen))
       }
+
+      for _ in 0..<populatedTiles {
+         var point = newPoint()
+         while map.tile(at: point) == .alive {
+            point = newPoint()
+         }
+         map.setTile(.alive, for: point)
+      }
+
       return map
    }
 
    static func random(
       width: Int = 25,
       height: Int = 25,
-      liveRatio: Double = 0.5
+      density: Double = 0.5,
+      seed: UInt64? = nil
    ) -> Tilemap {
-      var rando = Rando()
-      return random(width: width, height: height, liveRatio: liveRatio, gen: &rando)
+      var rando: Rando
+      if let seed = seed {
+         rando = Rando(seed: seed)
+      } else {
+         rando = Rando()
+      }
+      return random(width: width, height: height, density: density, gen: &rando)
    }
 }
 

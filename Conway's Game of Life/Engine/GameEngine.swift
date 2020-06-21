@@ -15,35 +15,28 @@ class GameEngine: ObservableObject {
    @Published var tilemap: Tilemap
    @Published private(set) var generation: Int = 0
    @Published private(set) var isRunning: Bool = false
-   var framerate: Double {
+   @Published private(set) var actualFrameRate: Double = 0
+   var idealFramerate: Double = 2 {
       didSet { frameFrequency = newFrameFrequency() }
    }
-
-   @Published private(set) var actualFrameRate: Double = 0
 
    private var bufferMap: Tilemap
    private lazy var frameFrequency = newFrameFrequency()
    private var lastUpdateTime = CFAbsoluteTimeGetCurrent()
    private let updateThread = DispatchQueue.global()
-   private var lock = NSLock()
 
    init(
-      tilemap: Tilemap = .init(width: GameEngine.defaultSize,
-                               height: GameEngine.defaultSize),
-      framerate: Double = 2
+      tilemap: Tilemap = .init(width: Tilemap.defaultSize,
+                               height: Tilemap.defaultSize)
    ) {
       self.tilemap = tilemap
       self.bufferMap = tilemap
-      self.framerate = framerate
    }
 }
 
+// MARK: - Public
+
 extension GameEngine {
-
-   // MARK: - Public
-   
-   static var defaultSize: Int { 25 }
-
    var framerateRange: ClosedRange<Double> { 1...20 }
 
    func toggleRunning() {
@@ -61,18 +54,25 @@ extension GameEngine {
       bufferMap = tilemap
    }
 
-   func randomize() {
-      tilemap = Tilemap.random(width: tilemap.width, height: tilemap.height)
+   func randomize(density: Double) {
+      tilemap = Tilemap.random(
+         width: tilemap.width,
+         height: tilemap.height,
+         density: density)
+      bufferMap = tilemap
       generation = 0
    }
 
    func clear() {
       tilemap = Tilemap(width: tilemap.width, height: tilemap.height)
+      bufferMap = tilemap
       generation = 0
    }
+}
 
-   // MARK: - Game Loop
+// MARK: - Game Loop
 
+extension GameEngine {
    private func start() {
       isRunning = true
       main()
@@ -112,6 +112,6 @@ extension GameEngine {
    }
 
    private func newFrameFrequency() -> Double {
-      return CFAbsoluteTime(exactly: 1 / Double(framerate)) ?? 1
+      CFAbsoluteTime(exactly: 1 / Double(idealFramerate)) ?? 1
    }
 }

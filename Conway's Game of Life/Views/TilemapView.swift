@@ -9,11 +9,21 @@
 import SwiftUI
 
 
-struct TilemapView: UIViewRepresentable {
+struct TilemapView: View {
    @Binding var tilemap: Tilemap
-   var isEditable: Bool
+   let isEditable: Bool
 
-   @Environment(\.colorScheme) var colorScheme
+   var body: some View {
+      TilemapViewRepresentable(tilemap: self.$tilemap, isEditable: isEditable)
+         .aspectRatio(CGFloat(tilemap.width) / CGFloat(tilemap.height),
+                      contentMode: .fit)
+   }
+}
+
+
+struct TilemapViewRepresentable: UIViewRepresentable {
+   @Binding var tilemap: Tilemap
+   let isEditable: Bool
 
    private let spacing: CGFloat = 0.0
 

@@ -29,33 +29,13 @@ SwiftUI was used for the UI. Performance could likely be improved with a lower-l
 
 
 struct AboutView: View {
-   @Environment(\.presentationMode) var presentation
-
    let title = "About John Conway's Game of Life"
 
    var body: some View {
-      NavigationView {
-         ScrollView {
-//            titleView()
-//               .padding()
-            rulesView()
-            algorithmView()
-         }.navigationBarTitle(Text(title), displayMode: .inline)
-            .navigationBarHidden(false)
-      }
-   }
-
-   private func dismissButton() -> some View {
-      Button(action: { self.presentation.wrappedValue.dismiss() }) {
-         Text("Dismiss")
-      }
-   }
-
-   private func titleView() -> some View {
-      Text(title)
-         .font(.largeTitle)
-         .fontWeight(.semibold)
-         .multilineTextAlignment(.center)
+      ScrollView {
+         rulesView()
+         algorithmView()
+      }.navigationBarTitle(Text("About"), displayMode: .large)
    }
 
    private func rulesView() -> some View {

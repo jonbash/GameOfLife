@@ -11,54 +11,88 @@ import SwiftUI
 struct ContentView: View {
    @ObservedObject private var gameEngine = GameEngine()
 
-   @State private var newWidthText: String = ""
-   @State private var newHeightText: String = ""
+   @State private var showingPopulationSetup = false
    @State private var showingAboutView = false
+   @State private var showingMapSetup = false
 
    private let framerateFormatter = configure(NumberFormatter()) {
       $0.maximumFractionDigits = 2
-   }
-   private let widthHeightFormatter = configure(NumberFormatter()) {
-      $0.minimum = 1
-      $0.maximum = 100
-      $0.maximumFractionDigits = 0
    }
 
    // MARK: - Body
 
    var body: some View {
-      VStack(spacing: 16) {
-         Button(action: { self.showingAboutView = true }) {
-            Text("About Conway's Game of Life")
+      NavigationView {
+         VStack(spacing: 16) {
+
+            TilemapView(
+               tilemap: self.$gameEngine.tilemap,
+               isEditable: !self.gameEngine.isRunning)
+               .border(Color.gray)
+               .padding(.horizontal)
+
+            Group {
+               Form {
+                  progressionControls()//.frame(alignment: .center)
+
+                  Button(action: { self.showingPopulationSetup.toggle() }) {
+                     HStack(alignment: .center) {
+                        Spacer()
+                        Text("Population:")
+                           .font(.caption)
+                        Text(String(gameEngine.tilemap.population))
+                           .font(.headline)
+
+                        Spacer()
+                        Divider()
+                        Spacer()
+
+                        Text("Generation:")
+                           .font(.caption)
+                        Text(String(gameEngine.generation))
+                           .font(.headline)
+
+                        Spacer()
+
+                        indicator(for: showingPopulationSetup)
+                     }
+                  }.buttonStyle(PlainButtonStyle())
+
+                  if showingPopulationSetup {
+                     PopulationControls(gameEngine: gameEngine)
+                  }
+
+                  Button(action: { self.showingMapSetup.toggle() }) {
+                     HStack(alignment: .center) {
+                        Spacer()
+                        Text("Current size:")
+                        Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
+                           .fontWeight(.bold)
+                        Spacer()
+                        indicator(for: showingMapSetup)
+                     }
+                  }.buttonStyle(PlainButtonStyle())
+
+                  if showingMapSetup {
+                     SizeSetupView(gameEngine: gameEngine)
+                  }
+
+                  framerateControls()
+                  if gameEngine.isRunning {
+                     HStack(alignment: .center) {
+                        Spacer()
+                        framerateIndicator()
+                        Spacer()
+                     }
+                  }
+               }
+            }.buttonStyle(LifeButtonStyle())
+               .navigationBarItems(trailing:
+                  NavigationLink(destination: AboutView()) {
+                     Text("About Conway's Game of Life")
+                  }
+            )
          }
-
-         Spacer()
-
-         HStack {
-            framerateIndicator()
-            Spacer()
-            populationCount()
-         }.padding(.horizontal)
-
-         TilemapView(
-            tilemap: self.$gameEngine.tilemap,
-            isEditable: !self.gameEngine.isRunning)
-            .border(Color.gray)
-            .padding(.horizontal)
-
-         Group {
-            mapInfo()
-
-            Divider()
-
-            tilemapSizeControls()
-            tilemapContentControls()
-
-            framerateControls()
-            progressionControls()
-         }.buttonStyle(LifeButtonStyle())
-      }.sheet(isPresented: $showingAboutView) {
-         AboutView()
       }
    }
 }
@@ -66,54 +100,25 @@ struct ContentView: View {
 // MARK: - SubViews
 
 extension ContentView {
-   private func tilemapSizeControls() -> some View {
-      HStack(spacing: 12) {
-         HStack(spacing: 8) {
-            labeledTextField("W:",
-                             placeholderText: "New Width",
-                             binding: $newWidthText)
-            labeledTextField("H:",
-                             placeholderText: "New Height",
-                             binding: $newHeightText)
-         }
-         Button(action: prepareToResizeTilemap) {
-            Text("Resize")
-         }.disabled(newWidth == nil || newHeight == nil)
-      }
-   }
-   private func tilemapContentControls() -> some View {
-      HStack(spacing: 8) {
-         Button(action: gameEngine.randomize) {
-            Text("Randomize")
-         }
-
-         Button(action: gameEngine.clear) {
-            Text("Clear")
-         }
-      }
-   }
    private func framerateControls() -> some View {
       HStack(spacing: 8) {
          Slider(
-            value: $gameEngine.framerate,
+            value: $gameEngine.idealFramerate,
             in: gameEngine.framerateRange)
-         Text(framerateString(from: gameEngine.framerate) + " gens/sec")
+         Text(framerateString(from: gameEngine.idealFramerate) + " gens/sec")
       }.padding(.horizontal, 20)
    }
    private func framerateIndicator() -> some View {
       Group {
          if gameEngine.isRunning {
             Text(framerateString(from: gameEngine.actualFrameRate) + "gens/sec")
-         } else {
-            EmptyView()
          }
       }
    }
-   private func populationCount() -> some View {
-      Text("Population: \(gameEngine.tilemap.population)")
-   }
+
    private func progressionControls() -> some View {
-      HStack(spacing: 20) {
+      HStack(alignment: .center, spacing: 20) {
+         Spacer()
          Button(action: gameEngine.toggleRunning) {
             HStack(spacing: 4) {
                if gameEngine.isRunning {
@@ -131,76 +136,146 @@ extension ContentView {
                Image(systemName: "forward.end.fill")
             }.disabled(gameEngine.isRunning)
          }
+         Spacer()
       }
    }
-   private func mapInfo() -> some View {
-      HStack {
-         HStack {
-            Text("Current size:")
-            Text("\(gameEngine.tilemap.width)x\(gameEngine.tilemap.height)")
-               .fontWeight(.bold)
-         }.font(.caption)
 
-         Spacer()
-         Divider().frame(height: 20, alignment: .center)
-         Spacer()
-
-         Text("Generation: \(gameEngine.generation)")
-            .font(.headline)
-      }.padding(.horizontal, 20)
+   func indicator(for showing: Bool) -> some View {
+      Group {
+         if showing {
+            Image(systemName: "chevron.up")
+         } else {
+            Image(systemName: "chevron.down")
+         }
+      }.foregroundColor(.secondary)
    }
 }
 
 // MARK: - Helpers
 
 extension ContentView {
-   private var newWidth: Int? {
-      widthHeightFormatter.number(from: newWidthText) as? Int
-   }
-   private var newHeight: Int? {
-      widthHeightFormatter.number(from: newHeightText) as? Int
-   }
-
    private var defaultButtonBG: Color {
       Color(red: 0.5,
             green: 0.9,
             blue: 0.8,
             opacity: 0.5)
    }
-   private func prepareToResizeTilemap() {
-      guard
-         let newWidth = newWidth,
-         let newHeight = newHeight
-         else { return }
-      UIApplication.shared.windows.forEach { window in
-         window.endEditing(false)
-      }
-      gameEngine.resizeMap(width: newWidth, height: newHeight)
-   }
-   private func labeledTextField(
-      _ labelTitle: String,
-      placeholderText: String,
-      binding: Binding<String>
-   ) -> some View {
-      HStack(spacing: 4) {
-         Text(labelTitle)
-         TextField(
-            placeholderText,
-            text: binding)
-            .keyboardType(.numberPad)
-            .frame(maxWidth: 100)
-      }
-   }
+
    private func framerateString(from value: Double) -> String {
       framerateFormatter.string(from:
          NSNumber(value: value)) ?? "??"
    }
 }
 
-// MARK: - Helper Types
+// MARK: - Setup Views
+
+struct SizeSetupView: View {
+   @Environment(\.presentationMode) var presentationMode
+
+   @ObservedObject private var gameEngine: GameEngine
+   @State private var newWidth: Double
+   @State private var newHeight: Double
+
+   private let widthHeightFormatter = configure(NumberFormatter()) {
+      $0.minimum = 1
+      $0.maximum = NSNumber(value: Tilemap.maxSize)
+      $0.maximumFractionDigits = 0
+   }
+
+   init(gameEngine: GameEngine) {
+      self.gameEngine = gameEngine
+      self._newWidth = State(initialValue: Double(gameEngine.tilemap.width))
+      self._newHeight = State(initialValue: Double(gameEngine.tilemap.height))
+   }
+
+   var body: some View {
+      VStack(spacing: 8) {
+         slider(for: .width)
+         slider(for: .height)
+
+         Button(action: {
+            self.gameEngine.resizeMap(
+               width: Int(self.newWidth),
+               height: Int(self.newHeight))
+            self.presentationMode.wrappedValue.dismiss()
+         }) {
+            Text("Resize")
+         }.buttonStyle(LifeButtonStyle())
+      }.padding()
+   }
+
+   private func slider(for type: SliderType) -> some View {
+      let binding: Binding<Double> = {
+         switch type {
+         case .width: return $newWidth
+         case .height: return $newHeight
+         }
+      }()
+      return HStack {
+         Text("\(type.rawValue.capitalized):")
+         Slider(value: binding, in: 1...Double(Tilemap.maxSize))
+         Text(widthHeightFormatter
+            .string(from: NSNumber(value: binding.wrappedValue))!)
+      }
+   }
+
+   private enum SliderType: String { case width, height }
+}
+
+
+struct PopulationControls: View {
+   @ObservedObject var gameEngine: GameEngine
+
+   @State private var density: Double = 0.5
+
+   init(gameEngine: GameEngine) {
+      self.gameEngine = gameEngine
+   }
+
+   var body: some View {
+      VStack(spacing: 16) {
+         VStack(spacing: 8) {
+            HStack(spacing: 8) {
+               Text("Density:")
+               Slider(value: $density, in: 0...Tilemap.maxDensity)
+            }.padding()
+
+            HStack {
+               Button(action: {
+                  self.gameEngine.randomize(density: self.density)
+               }) {
+                  Text("Randomize")
+               }
+               Button(action: gameEngine.clear) {
+                  Text("Clear")
+               }
+            }
+         }
+      }.buttonStyle(LifeButtonStyle())
+   }
+}
+
+// MARK: - Previews
 
 struct ContentView_Previews: PreviewProvider {
    static var previews: some View {
       ContentView()
+   }
+}
+
+struct SizeSetupView_Previews: PreviewProvider {
+   static var previews: some View {
+      SizeSetupView(gameEngine: GameEngine(
+         tilemap: Tilemap(width: 25, height: 25)))
+         .padding()
+         .previewLayout(.sizeThatFits)
+   }
+}
+
+struct PopulationControls_Previews: PreviewProvider {
+   static var previews: some View {
+      PopulationControls(gameEngine: GameEngine())
+         .padding()
+         .previewLayout(.sizeThatFits)
    }
 }
