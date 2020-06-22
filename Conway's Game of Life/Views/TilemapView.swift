@@ -12,9 +12,13 @@ import SwiftUI
 struct TilemapView: View {
    @Binding var tilemap: Tilemap
    let isEditable: Bool
+   @Binding var showGrid: Bool
 
    var body: some View {
-      TilemapViewRepresentable(tilemap: self.$tilemap, isEditable: isEditable)
+      TilemapViewRepresentable(
+         tilemap: self.$tilemap,
+         isEditable: isEditable,
+         showGrid: self.$showGrid)
          .aspectRatio(CGFloat(tilemap.width) / CGFloat(tilemap.height),
                       contentMode: .fit)
    }
@@ -24,18 +28,19 @@ struct TilemapView: View {
 struct TilemapViewRepresentable: UIViewRepresentable {
    @Binding var tilemap: Tilemap
    let isEditable: Bool
-
-   private let spacing: CGFloat = 0.0
+   @Binding var showGrid: Bool
 
    func makeUIView(context: Context) -> UITilemapView {
       let view = UITilemapView(tilemap: $tilemap)
       view.isEditable = isEditable
+      view.showGrid = showGrid
       return view
    }
 
    func updateUIView(_ uiView: UITilemapView, context: Context) {
       uiView.isEditable = isEditable
       uiView.tilemapSize = CGSize(width: tilemap.width, height: tilemap.height)
+      uiView.showGrid = showGrid
       uiView.setNeedsDisplay()
    }
 }
@@ -49,8 +54,11 @@ class UITilemapView: UIView {
    @Binding var tilemap: Tilemap
 
    var isEditable: Bool = true
+   var showGrid: Bool = true
 
    lazy var tilemapSize = CGSize(width: tilemap.width, height: tilemap.height)
+
+   private let gridColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.8)
 
    init(tilemap: Binding<Tilemap>) {
       self._tilemap = tilemap
@@ -72,14 +80,25 @@ class UITilemapView: UIView {
 
       deadColor.set()
       UIRectFill(rect)
+      if showGrid {
+         gridColor.setStroke()
+      }
 
       for column in 0..<tilemap.width {
          for row in 0..<tilemap.height {
             let point = Point(x: column, y: row)
-            guard let tile = tilemap.tile(at: point), tile.isAlive else { continue }
+            guard let tile = tilemap.tile(at: point) else { continue }
             let origin = getTileOrigin(point: point, tileSize: tileSize)
-            (tile.isAlive ? liveColor : deadColor).set()
-            UIRectFill(CGRect(origin: origin, size: tileSize))
+            let tileColor = tile.isAlive ? liveColor : deadColor
+
+            if showGrid {
+               tileColor.setFill()
+            } else {
+               tileColor.set()
+            }
+            let tileRect = CGRect(origin: origin, size: tileSize)
+            UIRectFill(tileRect)
+            UIRectFrame(tileRect)
          }
       }
    }
@@ -115,9 +134,15 @@ class UITilemapView: UIView {
 // MARK: - Previews
 
 struct TilemapView_Previews: PreviewProvider {
+   static let gridSize = 10
+
    static var previews: some View {
       TilemapView(
-         tilemap: Binding(get: { .random() }, set: { _ in }),
-         isEditable: true)
+         tilemap: Binding(
+            get: { .random(width: gridSize, height: gridSize) },
+            set: { _ in }),
+         isEditable: true,
+         showGrid: Binding(get: { true }, set: { _ in }))
+         .previewDevice("iPhone XS")
    }
 }

@@ -14,6 +14,7 @@ struct ContentView: View {
    @State private var showingPopulationSetup = false
    @State private var showingAboutView = false
    @State private var showingMapSetup = false
+   @State private var showGrid = true
 
    private let framerateFormatter = configure(NumberFormatter()) {
       $0.maximumFractionDigits = 2
@@ -27,7 +28,8 @@ struct ContentView: View {
 
             TilemapView(
                tilemap: self.$gameEngine.tilemap,
-               isEditable: !self.gameEngine.isRunning)
+               isEditable: !self.gameEngine.isRunning,
+               showGrid: self.$showGrid)
                .border(Color.gray)
                .padding(.horizontal)
 
@@ -74,7 +76,7 @@ struct ContentView: View {
                   }.buttonStyle(PlainButtonStyle())
 
                   if showingMapSetup {
-                     SizeSetupView(gameEngine: gameEngine)
+                     SizeSetupView(gameEngine: gameEngine, showGrid: $showGrid)
                   }
 
                   framerateControls()
@@ -175,6 +177,7 @@ struct SizeSetupView: View {
    @ObservedObject private var gameEngine: GameEngine
    @State private var newWidth: Double
    @State private var newHeight: Double
+   @Binding private var showGrid: Bool
 
    private let widthHeightFormatter = configure(NumberFormatter()) {
       $0.minimum = 1
@@ -182,14 +185,20 @@ struct SizeSetupView: View {
       $0.maximumFractionDigits = 0
    }
 
-   init(gameEngine: GameEngine) {
+   init(gameEngine: GameEngine, showGrid: Binding<Bool>) {
       self.gameEngine = gameEngine
       self._newWidth = State(initialValue: Double(gameEngine.tilemap.width))
       self._newHeight = State(initialValue: Double(gameEngine.tilemap.height))
+      self._showGrid = showGrid
    }
 
    var body: some View {
       VStack(spacing: 8) {
+         HStack {
+            Toggle(isOn: self.$showGrid) {
+               Text("Show grid")
+            }
+         }
          slider(for: .width)
          slider(for: .height)
 
@@ -259,14 +268,18 @@ struct PopulationControls: View {
 
 struct ContentView_Previews: PreviewProvider {
    static var previews: some View {
-      ContentView()
+      ContentView().previewDevice(.init(stringLiteral: "iPhone XS"))
    }
 }
 
 struct SizeSetupView_Previews: PreviewProvider {
    static var previews: some View {
-      SizeSetupView(gameEngine: GameEngine(
-         tilemap: Tilemap(width: 25, height: 25)))
+      SizeSetupView(
+         gameEngine: GameEngine(
+            tilemap: Tilemap(width: 25, height: 25)),
+         showGrid: Binding(
+            get: { return true },
+            set: { _ in }))
          .padding()
          .previewLayout(.sizeThatFits)
    }
