@@ -76,6 +76,10 @@ extension Tilemap {
    }
 
    mutating func toggleTile(at point: Point) {
+      guard self.contains(point: point) else {
+         tiles[point] = nil
+         return
+      }
       tiles[point] = (tiles[point] ?? .dead).toggled()
       if tiles[point]!.isAlive {
          population += 1
@@ -104,6 +108,10 @@ extension Tilemap {
    }
 
    mutating func setTile(_ tile: Tile, for point: Point) {
+      guard self.contains(point: point) else {
+         tiles[point] = nil
+         return
+      }
       let oldTile = tiles[point]
       tiles[point] = tile
       guard oldTile ?? .dead != tile else { return }
@@ -114,8 +122,6 @@ extension Tilemap {
 // MARK: - Tiles / Points
 
 extension Tilemap {
-   var tileCount: Int { tiles.count }
-
    func contains(point: Point) -> Bool {
       (0..<width).contains(point.x) && (0..<height).contains(point.y)
    }
