@@ -28,18 +28,59 @@ struct ContentView: View {
       }
    }
 
+   private let topBlue = Color(UIColor(
+      light: UIColor(red: 0.87, green: 0.93, blue: 1, alpha: 1),
+      dark: UIColor(red: 0.08, green: 0.12, blue: 0.2, alpha: 1),
+      defaultsToLight: false))
+   private let bottomBlue = Color(UIColor(
+      light: UIColor(red: 0.5, green: 0.6, blue: 0.7, alpha: 1),
+      dark: UIColor(red: 0.25, green: 0.3, blue: 0.5, alpha: 1),
+      defaultsToLight: false))
+   private let themeGrayscale = Color(UIColor(
+      light: .white,
+      dark: .black,
+      defaultsToLight: false))
+
    // MARK: - Body
 
    var body: some View {
-      NavigationView {
+      ZStack {
+         LinearGradient(
+            gradient: Gradient(colors: [
+               topBlue,
+               bottomBlue,
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+         )
+         .edgesIgnoringSafeArea(.all)
+
          VStack(spacing: 16) {
+            Button(action: {
+               self.showingAboutView = true
+            }) {
+               HStack {
+                  Spacer()
+                  HStack {
+                     Text("About Conway's Game of Life")
+                     Image(systemName: "info.circle")
+                  }
+                  .foregroundColor(.white)
+                  .padding(.horizontal)
+                  .padding(.vertical, 1)
+                  .background(bottomBlue)
+                  .cornerRadius(10)
+               }.padding(.trailing)
+            }
+            .shadow(color: bottomBlue.opacity(0.5), radius: 6, x: 4, y: 4)
+            .shadow(color: themeGrayscale.opacity(0.8), radius: 6, x: -4, y: -4)
+
             TilemapView(
                tilemap: self.$gameEngine.tilemap,
                isEditable: !self.gameEngine.isRunning,
                showGrid: self.$showGrid)
                .border(Color.gray)
                .padding(.horizontal, 8)
-
 
             List {
                Section(header:
@@ -51,7 +92,10 @@ struct ContentView: View {
                   }
                   .padding(.vertical, 6)
                   .frame(alignment: .center)
-                  .background(Color(red: 0.99, green: 0.94, blue: 0.85))
+                  .background(Color(UIColor(
+                     light: UIColor(red: 0.99, green: 0.94, blue: 0.85, alpha: 1),
+                     dark: UIColor(red: 0.4, green: 0.38, blue: 0.3, alpha: 1),
+                     defaultsToLight: false)))
                   .listRowInsets(EdgeInsets(
                      top: 0,
                      leading: 0,
@@ -62,16 +106,16 @@ struct ContentView: View {
                   populationViews()
                   sizeViews()
                   framerateControls()
-               }.listStyle(GroupedListStyle())
-                  .listRowBackground(Color(red: 1, green: 0.97, blue: 1))
+               }
+               .listStyle(GroupedListStyle())
+               .listRowBackground(Color(UIColor(
+                  light: UIColor(red: 1, green: 0.97, blue: 1, alpha: 1),
+                  dark: UIColor(red: 0.25, green: 0.1, blue: 0.22, alpha: 1),
+                  defaultsToLight: false)))
             }
             .buttonStyle(LifeButtonStyle())
-         }.navigationBarItems(trailing:
-            NavigationLink(destination: AboutView()) {
-               Text("About Conway's Game of Life")
-            }
-         ).background(Color(red: 0.87, green: 0.93, blue: 1))
-            .navigationBarTitle("", displayMode: .inline)
+         }
+         .sheet(isPresented: $showingAboutView, content: AboutView.init)
       }
    }
 }
@@ -210,5 +254,15 @@ extension ContentView {
 struct ContentView_Previews: PreviewProvider {
    static var previews: some View {
       ContentView().previewDevice(.init(stringLiteral: "iPhone XS"))
+   }
+}
+
+struct DarkContentView_Previews: PreviewProvider {
+   static var previews: some View {
+      ContentView()
+         .previewDevice("iPhone XS")
+         .transformEnvironment(\.colorScheme) { uiStyle in
+            uiStyle = .dark
+      }
    }
 }
