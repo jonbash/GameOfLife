@@ -88,8 +88,9 @@ extension GameEngine {
                continue
             }
             self.lastUpdateTime = currentTime
+            let computedFramerate = 1 / deltaTime
             DispatchQueue.main.async {
-               self.actualFrameRate = 1 / deltaTime
+               self.actualFrameRate = computedFramerate
             }
             DispatchQueue.global().sync {
                self.update()

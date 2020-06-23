@@ -58,7 +58,7 @@ class UITilemapView: UIView {
 
    lazy var tilemapSize = CGSize(width: tilemap.width, height: tilemap.height)
 
-   private let gridColor = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 0.8)
+   private let gridColor: UIColor = .gray
 
    init(tilemap: Binding<Tilemap>) {
       self._tilemap = tilemap
@@ -134,7 +134,7 @@ class UITilemapView: UIView {
 // MARK: - Previews
 
 struct TilemapView_Previews: PreviewProvider {
-   static let gridSize = 10
+   static let gridSize = 25
 
    static var previews: some View {
       TilemapView(
