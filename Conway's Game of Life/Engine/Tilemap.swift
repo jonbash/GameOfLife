@@ -19,6 +19,8 @@ struct Tilemap {
 
    private(set) var population: Int = 0
 
+   var gridWraps = true
+
    init(width: Int = 1, height: Int = 1) {
       self.width = width
       self.height = height
@@ -30,8 +32,8 @@ struct Tilemap {
 
 extension Tilemap {
    subscript(_ point: Point) -> Tile {
-      get { tiles[point, default: .dead] }
-      set { tiles[point] = newValue }
+      get { tiles[wrapPoint(point), default: .dead] }
+      set { tiles[wrapPoint(point)] = newValue }
    }
 
    subscript(_ x: Int, _ y: Int) -> Tile? {
@@ -44,11 +46,11 @@ extension Tilemap {
 extension Tilemap {
    func newGenerationChanges() -> Set<Point> {
       self.compactMapToSet { point in
-         let tileIsAlive = tiles[point]?.isAlive ?? false
+         let tileIsAlive = self[point].isAlive
          var count = 0
          var tileWillLive: Bool = false
          for neighbor in point.neighbors {
-            if self.contains(point: neighbor) && tiles[neighbor]?.isAlive == true {
+            if self[neighbor].isAlive == true {
                count += 1
             } else { continue }
 
@@ -65,13 +67,9 @@ extension Tilemap {
 
    mutating func apply(_ changes: Set<Point>) {
       changes.forEach { point in
-         if let tile = tiles[point] {
-            population += tile.isDead ? 1 : -1
-            tiles[point] = tile.toggled()
-         } else {
-            tiles[point] = .alive
-            population += 1
-         }
+         let tile = self[point]
+         population += tile.isDead ? 1 : -1
+         tiles[point] = tile.toggled()
       }
    }
 
@@ -103,17 +101,18 @@ extension Tilemap {
    }
 
    func tile(at point: Point) -> Tile? {
-      guard self.contains(point: point) else { return nil }
+      guard self.contains(point: wrapPoint(point)) else { return nil }
       return tiles[point]
    }
 
    mutating func toggleTile(at point: Point) {
-      guard self.contains(point: point) else {
+      let p = wrapPoint(point)
+      guard self.contains(point: p) else {
          tiles[point] = nil
          return
       }
-      tiles[point] = (tiles[point] ?? .dead).toggled()
-      if tiles[point]!.isAlive {
+      self[p] = self[p].toggled()
+      if self[p].isAlive {
          population += 1
       } else {
          population -= 1
@@ -121,14 +120,34 @@ extension Tilemap {
    }
 
    mutating func setTile(_ tile: Tile, for point: Point) {
-      guard self.contains(point: point) else {
-         tiles[point] = nil
+      let p = wrapPoint(point)
+      guard self.contains(point: p) else {
+         tiles[p] = nil
          return
       }
-      let oldTile = tiles[point]
-      tiles[point] = tile
-      guard oldTile ?? .dead != tile else { return }
+      let oldTile = self[point]
+      self[point] = tile
+      guard oldTile != tile else { return }
       population += tile.isAlive ? 1 : -1
+   }
+
+   func wrapPoint(_ point: Point) -> Point {
+      var p = point
+      if gridWraps {
+         while p.x < 0 {
+            p.x += width
+         }
+         while p.y < 0 {
+            p.y += height
+         }
+         while p.x >= width {
+            p.x -= width
+         }
+         while p.y >= height {
+            p.y -= height
+         }
+      }
+      return p
    }
 }
 

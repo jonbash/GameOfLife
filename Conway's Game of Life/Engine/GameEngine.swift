@@ -16,6 +16,12 @@ class GameEngine: ObservableObject {
    @Published private(set) var generation: Int = 0
    @Published private(set) var isRunning: Bool = false
    @Published private(set) var actualFrameRate: Double = 0
+   @Published var gridWraps: Bool {
+      didSet {
+         tilemap.gridWraps = gridWraps
+         bufferMap.gridWraps = gridWraps
+      }
+   }
    var idealFramerate: Double = 2 {
       didSet { frameFrequency = newFrameFrequency() }
    }
@@ -31,6 +37,7 @@ class GameEngine: ObservableObject {
    ) {
       self.tilemap = tilemap
       self.bufferMap = tilemap
+      self.gridWraps = tilemap.gridWraps
    }
 }
 
