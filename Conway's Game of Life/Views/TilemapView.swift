@@ -73,9 +73,18 @@ class UITilemapView: UIView {
    }
 
    override func draw(_ rect: CGRect) {
-      let isLight = (colorScheme == .light)
-      let liveColor: UIColor = isLight ? .black : .white
-      let deadColor: UIColor = isLight ? .white : .black
+      let liveColor = UIColor { traits in
+         switch traits.userInterfaceStyle {
+            case .dark: return .white
+            default: return .black
+         }
+      }
+      let deadColor = UIColor { traits in
+         switch traits.userInterfaceStyle {
+            case .dark: return .black
+            default: return .white
+         }
+      }
       let tileSize = getTileSize(tilemapSize: tilemapSize, rect: rect)
 
       deadColor.set()

@@ -56,7 +56,7 @@ extension Tilemap {
 
             if count == 3 || (tileIsAlive && count == 2) {
                tileWillLive = true
-            } else if count >= 4 {
+            } else if count >= 4 || (tileIsAlive && count >= 3) {
                tileWillLive = false
                break
             }
@@ -132,21 +132,22 @@ extension Tilemap {
    }
 
    func wrapPoint(_ point: Point) -> Point {
+      guard gridWraps else { return point }
       var p = point
-      if gridWraps {
-         while p.x < 0 {
-            p.x += width
-         }
-         while p.y < 0 {
-            p.y += height
-         }
-         while p.x >= width {
-            p.x -= width
-         }
-         while p.y >= height {
-            p.y -= height
-         }
+
+      while p.x < 0 {
+         p.x += width
       }
+      while p.y < 0 {
+         p.y += height
+      }
+      while p.x >= width {
+         p.x -= width
+      }
+      while p.y >= height {
+         p.y -= height
+      }
+      
       return p
    }
 }

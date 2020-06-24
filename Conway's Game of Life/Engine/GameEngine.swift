@@ -12,7 +12,9 @@ import UIKit
 
 
 class GameEngine: ObservableObject {
-   @Published var tilemap: Tilemap
+   @Published var tilemap: Tilemap {
+      didSet { bufferMap = tilemap }
+   }
    @Published private(set) var generation: Int = 0
    @Published private(set) var isRunning: Bool = false
    @Published private(set) var actualFrameRate: Double = 0
@@ -22,12 +24,12 @@ class GameEngine: ObservableObject {
          bufferMap.gridWraps = gridWraps
       }
    }
-   var idealFramerate: Double = 2 {
-      didSet { frameFrequency = newFrameFrequency() }
+   var requestedFramerate: Double = 2 {
+      didSet { deltaTimeThreshold = newDeltaTimeThreshold() }
    }
 
    private var bufferMap: Tilemap
-   private lazy var frameFrequency = newFrameFrequency()
+   private lazy var deltaTimeThreshold = newDeltaTimeThreshold()
    private var lastUpdateTime = CFAbsoluteTimeGetCurrent()
    private let updateThread = DispatchQueue.global()
 
@@ -66,13 +68,11 @@ extension GameEngine {
          width: tilemap.width,
          height: tilemap.height,
          density: density)
-      bufferMap = tilemap
       generation = 0
    }
 
    func clear() {
       tilemap = Tilemap(width: tilemap.width, height: tilemap.height)
-      bufferMap = tilemap
       generation = 0
    }
 }
@@ -80,7 +80,8 @@ extension GameEngine {
 // MARK: - Game Loop
 
 extension GameEngine {
-   private func start() {
+   func start() {
+      guard !isRunning else { return }
       isRunning = true
       main()
    }
@@ -91,7 +92,7 @@ extension GameEngine {
             guard let self = self else { return }
             let currentTime = CFAbsoluteTimeGetCurrent()
             let deltaTime = currentTime - self.lastUpdateTime
-            if deltaTime < self.frameFrequency {
+            if deltaTime < self.deltaTimeThreshold {
                continue
             }
             self.lastUpdateTime = currentTime
@@ -112,14 +113,13 @@ extension GameEngine {
          self.tilemap.apply(changes)
          self.generation += 1
       }
-      bufferMap = tilemap
    }
 
-   private func stop() {
+   func stop() {
       isRunning = false
    }
 
-   private func newFrameFrequency() -> Double {
-      CFAbsoluteTime(exactly: 1 / Double(idealFramerate)) ?? 1
+   private func newDeltaTimeThreshold() -> Double {
+      CFAbsoluteTime(exactly: 1 / Double(requestedFramerate)) ?? 1
    }
 }

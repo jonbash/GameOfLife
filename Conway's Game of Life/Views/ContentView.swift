@@ -80,7 +80,10 @@ struct ContentView: View {
                isEditable: !self.gameEngine.isRunning,
                showGrid: self.$showGrid)
                .border(Color.gray)
+               .shadow(color: Color(white: 1, opacity: 0.1), radius: 5, x: 5, y: 5)
+               .shadow(color: Color(white: 0, opacity: 0.3), radius: 6, x: -7, y: -7)
                .padding(.horizontal, 8)
+
 
             List {
                Section(header:
@@ -110,7 +113,7 @@ struct ContentView: View {
                .listStyle(GroupedListStyle())
                .listRowBackground(Color(UIColor(
                   light: UIColor(red: 1, green: 0.97, blue: 1, alpha: 1),
-                  dark: UIColor(red: 0.25, green: 0.1, blue: 0.22, alpha: 1),
+                  dark: UIColor(red: 0.14, green: 0.03, blue: 0.08, alpha: 1),
                   defaultsToLight: false)))
             }
             .buttonStyle(LifeButtonStyle())
@@ -127,9 +130,9 @@ extension ContentView {
       Group {
          HStack(spacing: 8) {
             Slider(
-               value: $gameEngine.idealFramerate,
+               value: $gameEngine.requestedFramerate,
                in: gameEngine.framerateRange)
-            Text(framerateString(from: gameEngine.idealFramerate) + " gens/sec")
+            Text(framerateString(from: gameEngine.requestedFramerate) + " gens/sec")
          }.padding(.horizontal, 20)
 
          if gameEngine.isRunning {
