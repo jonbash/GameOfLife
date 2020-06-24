@@ -6,7 +6,7 @@
 //  Copyright © 2020 Jon Bash. All rights reserved.
 //
 
-import Foundation
+import SwiftUI
 
 
 @discardableResult
@@ -38,6 +38,25 @@ extension BinaryFloatingPoint {
       (self > clamp) ? clamp : self
    }
 }
+
+extension UIColor {
+   convenience init(
+      light: @autoclosure @escaping () -> UIColor,
+      dark: @autoclosure @escaping () -> UIColor,
+      defaultsToLight: Bool = true
+   ) {
+      self.init { traits -> UIColor in
+         let defaultColor = defaultsToLight ? light : dark
+
+         switch traits.userInterfaceStyle {
+         case .light: return light()
+         case .dark: return dark()
+         default: return defaultColor()
+         }
+      }
+   }
+}
+
 
 /*
 // MARK: - Linked List

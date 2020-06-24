@@ -35,7 +35,10 @@ struct AboutView: View {
       ScrollView {
          rulesView()
          algorithmView()
-      }.navigationBarTitle(Text("About"), displayMode: .large)
+      }
+      .navigationBarTitle(Text("About"), displayMode: .large)
+      .edgesIgnoringSafeArea([])
+      .navigationBarHidden(false)
    }
 
    private func rulesView() -> some View {
@@ -49,7 +52,8 @@ struct AboutView: View {
                   .fontWeight(.medium)
             }
          }
-      }.padding()
+      }
+      .padding()
    }
 
    private func algorithmView() -> some View {

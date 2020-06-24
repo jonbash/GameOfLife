@@ -38,6 +38,11 @@ struct SizeSetupView: View {
                Text("Show grid")
             }
          }
+         HStack {
+            Toggle(isOn: self.$gameEngine.gridWraps) {
+               Text("Grid wraps")
+            }
+         }
          slider(for: .width)
          slider(for: .height)
 
