@@ -68,11 +68,13 @@ extension GameEngine {
          width: tilemap.width,
          height: tilemap.height,
          density: density)
+      tilemap.gridWraps = gridWraps
       generation = 0
    }
 
    func clear() {
       tilemap = Tilemap(width: tilemap.width, height: tilemap.height)
+      tilemap.gridWraps = gridWraps
       generation = 0
    }
 }
