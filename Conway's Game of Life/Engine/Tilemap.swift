@@ -28,6 +28,13 @@ struct Tilemap {
    }
 }
 
+extension Tilemap {
+   static var maxDensity: Double { 0.9 }
+   static var defaultSize: Int { 32 }
+   static var minSize: Int { 8 }
+   static var maxSize: Int { 128 }
+}
+
 // MARK: - Subscripts
 
 extension Tilemap {
@@ -189,13 +196,9 @@ extension Tilemap {
 // MARK: - Random
 
 extension Tilemap {
-   static var maxDensity: Double { 0.9 }
-   static var defaultSize: Int { 25 }
-   static var maxSize: Int { 200 }
-
    static func random<RNG: RandomNumberGenerator>(
-      width: Int = 25,
-      height: Int = 25,
+      width: Int = defaultSize,
+      height: Int = defaultSize,
       density: Double = 0.5,
       gen: inout RNG
    ) -> Tilemap {
@@ -223,8 +226,8 @@ extension Tilemap {
    }
 
    static func random(
-      width: Int = 25,
-      height: Int = 25,
+      width: Int = defaultSize,
+      height: Int = defaultSize,
       density: Double = 0.5,
       seed: UInt64? = nil
    ) -> Tilemap {
@@ -249,7 +252,7 @@ extension Tilemap: CustomStringConvertible {
       var output = ""
       for y in 0..<height {
          for x in 0..<width {
-            output += tile(at: Point(x: x, y: y))?.isAlive ?? false ? "O" : " "
+            output += (tile(at: Point(x: x, y: y))?.isAlive == true) ? "O" : " "
          }
          output += "\n"
       }
