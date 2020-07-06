@@ -33,10 +33,6 @@ extension Tile {
    func toggled() -> Tile {
       return (self == .alive) ? .dead : .alive
    }
-
-   func willLive(given liveNeighbors: Int) -> Bool {
-      (liveNeighbors == 3) || (isAlive && liveNeighbors == 2)
-   }
 }
 
 // MARK: - Random

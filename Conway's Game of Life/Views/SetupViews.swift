@@ -19,8 +19,8 @@ struct SizeSetupView: View {
    @Binding private var showGrid: Bool
 
    private let widthHeightFormatter = configure(NumberFormatter()) {
-      $0.minimum = 1
-      $0.maximum = NSNumber(value: Tilemap.maxSize)
+      $0.minimum = Tilemap.minSize as NSNumber
+      $0.maximum = Tilemap.maxSize as NSNumber
       $0.maximumFractionDigits = 0
    }
 
@@ -46,14 +46,9 @@ struct SizeSetupView: View {
          slider(for: .width)
          slider(for: .height)
 
-         Button(action: {
-            self.gameEngine.resizeMap(
-               width: Int(self.newWidth),
-               height: Int(self.newHeight))
-            self.presentationMode.wrappedValue.dismiss()
-         }) {
-            Text("Resize")
-         }.buttonStyle(LifeButtonStyle())
+//         Button(action: resizeMap) {
+//            Text("Resize")
+//         }.buttonStyle(LifeButtonStyle())
       }.padding()
    }
 
@@ -66,10 +61,18 @@ struct SizeSetupView: View {
       }()
       return HStack {
          Text("\(type.rawValue.capitalized):")
-         Slider(value: binding, in: 1...Double(Tilemap.maxSize))
+         Slider(value: binding, in: Double(Tilemap.minSize)...Double(Tilemap.maxSize), step: 1) { (_) in
+            self.resizeMap()
+         }
          Text(widthHeightFormatter
             .string(from: NSNumber(value: binding.wrappedValue))!)
       }
+   }
+
+   func resizeMap() {
+      self.gameEngine.resizeMap(
+         width: Int(self.newWidth),
+         height: Int(self.newHeight))
    }
 
    private enum SliderType: String { case width, height }

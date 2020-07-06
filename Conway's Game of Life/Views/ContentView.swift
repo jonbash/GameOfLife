@@ -40,82 +40,84 @@ struct ContentView: View {
       light: .white,
       dark: .black,
       defaultsToLight: false))
+   private let controlsHeaderBackground = Color(UIColor(
+      light: UIColor(red: 1, green: 0.96, blue: 0.89, alpha: 1),
+      dark: UIColor(red: 0.17, green: 0.18, blue: 0.11, alpha: 1),
+      defaultsToLight: false))
+   private let controlsBackgroundColor = Color(UIColor(
+      light: UIColor(red: 1, green: 0.97, blue: 1, alpha: 1),
+      dark: UIColor(red: 0.14, green: 0.03, blue: 0.08, alpha: 1),
+      defaultsToLight: false))
 
    // MARK: - Body
 
    var body: some View {
-      ZStack {
-         LinearGradient(
-            gradient: Gradient(colors: [
-               topBlue,
-               bottomBlue,
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-         )
-         .edgesIgnoringSafeArea(.all)
+      NavigationView {
+         ZStack {
+            LinearGradient(
+               gradient: Gradient(colors: [
+                  topBlue,
+                  bottomBlue,
+               ]),
+               startPoint: .top,
+               endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all)
 
-         VStack(spacing: 16) {
-            Button(action: {
-               self.showingAboutView = true
-            }) {
-               HStack {
-                  Spacer()
-                  HStack {
-                     Text("About Conway's Game of Life")
-                     Image(systemName: "info.circle")
+            VStack(spacing: 16) {
+
+               TilemapView(
+                  tilemap: self.$gameEngine.tilemap,
+                  isEditable: !self.gameEngine.isRunning,
+                  showGrid: self.$showGrid)
+                  .border(Color.gray)
+                  .shadow(color: Color(white: 1, opacity: 0.1), radius: 5, x: -5, y: -5)
+                  .shadow(color: Color(white: 0, opacity: 0.3), radius: 6, x: 7, y: 7)
+                  .padding(.horizontal, 8)
+                  .padding(.top, 12)
+
+
+               List {
+                  Section(
+                     header: HStack {
+                        Spacer()
+                        Text("Controls".uppercased())
+                           .font(.subheadline)
+                           .fontWeight(.semibold)
+                        Spacer()
+                     }
+                     .padding(.vertical, 6)
+                     .frame(alignment: .center)
+                     .background(controlsHeaderBackground)
+                     .listRowInsets(
+                        EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+                     )
+                     .cornerRadius(10)
+                  ) {
+                     progressionControls()
+                     populationViews()
+                     sizeViews()
+                     framerateControls()
                   }
-                  .foregroundColor(.white)
-                  .padding(.horizontal)
-                  .padding(.vertical, 1)
-                  .background(bottomBlue)
-                  .cornerRadius(10)
-               }.padding(.trailing)
-            }
-            .shadow(color: bottomBlue.opacity(0.5), radius: 6, x: 4, y: 4)
-            .shadow(color: themeGrayscale.opacity(0.8), radius: 6, x: -4, y: -4)
-
-            TilemapView(
-               tilemap: self.$gameEngine.tilemap,
-               isEditable: !self.gameEngine.isRunning,
-               showGrid: self.$showGrid)
-               .border(Color.gray)
-               .padding(.horizontal, 8)
-
-            List {
-               Section(header:
-                  HStack {
-                     Spacer()
-                     Text("Controls".uppercased())
-                        .font(.subheadline)
-                     Spacer()
-                  }
-                  .padding(.vertical, 6)
-                  .frame(alignment: .center)
-                  .background(Color(UIColor(
-                     light: UIColor(red: 0.99, green: 0.94, blue: 0.85, alpha: 1),
-                     dark: UIColor(red: 0.4, green: 0.38, blue: 0.3, alpha: 1),
-                     defaultsToLight: false)))
-                  .listRowInsets(EdgeInsets(
-                     top: 0,
-                     leading: 0,
-                     bottom: 0,
-                     trailing: 0))
-               ) {
-                  progressionControls()
-                  populationViews()
-                  sizeViews()
-                  framerateControls()
+                  .listStyle(GroupedListStyle())
+                  .listRowBackground(controlsBackgroundColor)
                }
-               .listStyle(GroupedListStyle())
-               .listRowBackground(Color(UIColor(
-                  light: UIColor(red: 1, green: 0.97, blue: 1, alpha: 1),
-                  dark: UIColor(red: 0.25, green: 0.1, blue: 0.22, alpha: 1),
-                  defaultsToLight: false)))
+               .buttonStyle(LifeButtonStyle())
             }
-            .buttonStyle(LifeButtonStyle())
+            .navigationBarTitle("Game of Life", displayMode: .inline)
+            .navigationBarItems(
+               trailing: Button(action: {
+                  self.showingAboutView = true
+               }) {
+                  Image(systemName: "info.circle")
+                     .foregroundColor(.white)
+                     .padding(8)
+               }.background(Circle().foregroundColor(bottomBlue))
+               .shadow(color: bottomBlue.opacity(0.5), radius: 6, x: 4, y: 4)
+               .shadow(color: themeGrayscale.opacity(0.8), radius: 6, x: 4, y: 4)
+            )
+            .sheet(isPresented: $showingAboutView, content: AboutView.init)
          }
-         .sheet(isPresented: $showingAboutView, content: AboutView.init)
       }
    }
 }
@@ -127,9 +129,9 @@ extension ContentView {
       Group {
          HStack(spacing: 8) {
             Slider(
-               value: $gameEngine.idealFramerate,
+               value: $gameEngine.requestedFramerate,
                in: gameEngine.framerateRange)
-            Text(framerateString(from: gameEngine.idealFramerate) + " gens/sec")
+            Text(framerateString(from: gameEngine.requestedFramerate) + " gens/sec")
          }.padding(.horizontal, 20)
 
          if gameEngine.isRunning {
@@ -155,18 +157,18 @@ extension ContentView {
          Button(action: gameEngine.toggleRunning) {
             HStack(spacing: 4) {
                if gameEngine.isRunning {
-                  Text("Pause Simulation")
+                  Text("Pause")
                   Image(systemName: "pause.fill")
                } else {
-                  Text("Start Simulation")
-                  Image(systemName: "forward.fill")
+                  Text("Start")
+                  Image(systemName: "play.fill")
                }
             }
          }
          Button(action: gameEngine.advanceGeneration) {
             HStack(spacing: 2) {
-               Text("Advance")
-               Image(systemName: "forward.end.fill")
+               Text("Step")
+               Image(systemName: "goforward")
             }.disabled(gameEngine.isRunning)
          }
          Spacer()
